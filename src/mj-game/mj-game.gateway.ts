@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger } from "@nestjs/common";
 import {
   ConnectedSocket,
   MessageBody,
@@ -8,28 +8,28 @@ import {
   SubscribeMessage,
   WebSocketGateway,
   WebSocketServer,
-} from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+} from "@nestjs/websockets";
+import { Server, Socket } from "socket.io";
 
 interface GamePlayer {
-  game: 'default';
-  state: 'waiting' | 'playing' | 'paused' | 'finished';
-  position: 'south' | 'west' | 'north' | 'east' | 'random' | 'observer';
+  game: "default";
+  state: "waiting" | "playing" | "paused" | "finished";
+  position: "south" | "west" | "north" | "east" | "random" | "observer";
   player: string;
 }
 
 interface GameRequest {
   type: string;
   data?: {
-    game?: 'default';
-    position?: 'south' | 'west' | 'north' | 'east' | 'random' | 'observer';
+    game?: "default";
+    position?: "south" | "west" | "north" | "east" | "random" | "observer";
     player?: string;
   };
 }
 
 interface GameResponse {
   type: string;
-  status: 'success' | 'error';
+  status: "success" | "error";
   message?: string;
   data?: {
     player: GamePlayer;
@@ -39,7 +39,7 @@ interface GameResponse {
 
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: "*",
   },
 })
 export class MjGameGateway
@@ -56,14 +56,14 @@ export class MjGameGateway
     string,
     (data: GameRequest, client?: Socket) => GameResponse
   > = new Map([
-    ['joinGame', this.handleJoinGame],
-    ['leaveGame', this.handleLeaveGame],
-    ['resetGame', this.handleResetGame],
-    ['startGame', this.handleStartGame],
+    ["joinGame", this.handleJoinGame],
+    ["leaveGame", this.handleLeaveGame],
+    ["resetGame", this.handleResetGame],
+    ["startGame", this.handleStartGame],
   ]);
 
   afterInit() {
-    this.logger.log('Initialized!');
+    this.logger.log("Initialized!");
   }
 
   handleConnection(client: Socket) {
@@ -80,16 +80,16 @@ export class MjGameGateway
     this.logger.debug(`Number of connected clients: ${sockets.size}`);
   }
 
-  @SubscribeMessage('mj:game')
+  @SubscribeMessage("mj:game")
   handleMessage(
     @MessageBody() data: GameRequest,
     @ConnectedSocket() client: Socket,
   ): void {
     const handler = this.messageHandlers.get(data.type);
     if (!handler) {
-      client.emit('mj:game', {
+      client.emit("mj:game", {
         type: data.type,
-        status: 'error',
+        status: "error",
         message: `Handler for data.type: ${data.type} not found`,
       });
       return;
@@ -97,10 +97,10 @@ export class MjGameGateway
 
     const response = handler.call(this, data, client);
 
-    client.emit('mj:game', response);
+    client.emit("mj:game", response);
 
-    this.server.emit('mj:game', {
-      type: 'gameInfo',
+    this.server.emit("mj:game", {
+      type: "gameInfo",
       data: {
         game: response.data.game,
       },
@@ -111,23 +111,23 @@ export class MjGameGateway
     const existPlayer = this.clients.get(client.id);
     if (existPlayer) {
       return {
-        type: 'joinGame',
-        status: 'error',
-        message: 'Already joined a game',
+        type: "joinGame",
+        status: "error",
+        message: "Already joined a game",
       };
     }
 
     const player = {
       game: request.data.game,
-      state: 'waiting',
+      state: "waiting",
       position: request.data.position,
       player: request.data.player,
     } as GamePlayer;
     this.clients.set(client.id, player);
 
     return {
-      type: 'joinGame',
-      status: 'success',
+      type: "joinGame",
+      status: "success",
       data: {
         player,
         game: {},
@@ -137,8 +137,8 @@ export class MjGameGateway
 
   handleLeaveGame(request: GameRequest): GameResponse {
     return {
-      type: 'leaveGame',
-      status: 'success',
+      type: "leaveGame",
+      status: "success",
       data: {
         player: {
           game: request.data.game,
@@ -153,12 +153,12 @@ export class MjGameGateway
 
   handleResetGame(request: GameRequest): GameResponse {
     return {
-      type: 'resetGame',
-      status: 'success',
+      type: "resetGame",
+      status: "success",
       data: {
         player: {
           game: request.data.game,
-          state: 'waiting',
+          state: "waiting",
           position: request.data.position,
           player: request.data.player,
         },
@@ -169,12 +169,12 @@ export class MjGameGateway
 
   handleStartGame(request: GameRequest): GameResponse {
     return {
-      type: 'startGame',
-      status: 'success',
+      type: "startGame",
+      status: "success",
       data: {
         player: {
           game: request.data.game,
-          state: 'playing',
+          state: "playing",
           position: request.data.position,
           player: request.data.player,
         },
