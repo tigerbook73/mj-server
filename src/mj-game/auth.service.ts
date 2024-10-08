@@ -27,7 +27,6 @@ export class AuthService {
     }
 
     client.user = user;
-    user.client = client;
     return user;
   }
 
@@ -36,7 +35,6 @@ export class AuthService {
       throw new Error("User not signed in");
     }
 
-    client.user.client = null;
     client.user = null;
   }
 }

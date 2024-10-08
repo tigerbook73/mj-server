@@ -15,6 +15,12 @@ import {
   GameRequest,
   GameRequestType,
   GameResponse,
+  ListClientRequest,
+  ListClientResponse,
+  ListRoomRequest,
+  ListRoomResponse,
+  ListUserRequest,
+  ListUserResponse,
   SignInRequest,
   SignInResponse,
   SignOutRequest,
@@ -27,7 +33,10 @@ import { MjGameService } from "./mj-game.service";
 import { AuthService } from "./auth.service";
 import { ClientModel } from "src/common/models/client.model";
 
-type RequestHandler = (data: GameRequest, client?: Socket) => GameResponse;
+type RequestHandler = {
+  update: boolean;
+  handler: (data: GameRequest, client?: Socket) => GameResponse;
+};
 
 @WebSocketGateway({
   cors: {
@@ -92,7 +101,26 @@ export class MjGameGateway
   ) {
     //
     this.messageHandlers = new Map<string, any>([
-      [GameRequestType.SIGN_IN, this.handleSignInRequest],
+      [
+        GameRequestType.SIGN_IN,
+        { update: true, handler: this.handleSignInRequest },
+      ],
+      [
+        GameRequestType.SIGN_OUT,
+        { update: true, handler: this.handleSignOutRequest },
+      ],
+      [
+        GameRequestType.LIST_CLIENT,
+        { update: false, handler: this.handleListClientRequest },
+      ],
+      [
+        GameRequestType.LIST_USER,
+        { update: false, handler: this.handleListUserRequest },
+      ],
+      [
+        GameRequestType.LIST_ROOM,
+        { update: false, handler: this.handleListRoomRequest },
+      ],
     ]);
   }
 
@@ -137,17 +165,19 @@ export class MjGameGateway
       throw new Error(`Handler not found for ${data.type}`);
     }
 
-    const response = handler.call(this, data, clientModel);
+    const response = handler.handler.call(this, data, clientModel);
 
     client.emit("mj:game", response);
 
-    this.server.emit("mj:game", {
-      type: GameEventType.GAME_UPDATED,
-      data: {
-        clients: this.clientService.findAll(),
-        rooms: this.roomService.findAll(),
-      },
-    });
+    if (handler.update) {
+      this.server.emit("mj:game", {
+        type: GameEventType.GAME_UPDATED,
+        data: {
+          clients: this.clientService.findAll(),
+          rooms: this.roomService.findAll(),
+        },
+      });
+    }
   }
 
   handleSignInRequest(
@@ -170,6 +200,36 @@ export class MjGameGateway
     return {
       type: request.type,
       status: "success",
+    };
+  }
+
+  handleListClientRequest(
+    request: ListClientRequest,
+    // client: ClientModel,
+  ): ListClientResponse {
+    const clients = this.clientService.findAll();
+    return {
+      type: request.type,
+      status: "success",
+      data: clients,
+    };
+  }
+
+  handleListUserRequest(request: ListUserRequest): ListUserResponse {
+    const users = this.userService.findAll();
+    return {
+      type: request.type,
+      status: "success",
+      data: users,
+    };
+  }
+
+  handleListRoomRequest(request: ListRoomRequest): ListRoomResponse {
+    const rooms = this.roomService.findAll();
+    return {
+      type: request.type,
+      status: "success",
+      data: rooms,
     };
   }
 }

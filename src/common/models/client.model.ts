@@ -17,4 +17,12 @@ export class ClientModel {
     this.id = clientCreate.id;
     this.socket = clientCreate.socket;
   }
+
+  toJSON(): any {
+    return {
+      id: this.id,
+      user: this.user,
+      socket: this.socket ? "_" : undefined,
+    };
+  }
 }

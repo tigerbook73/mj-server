@@ -1,5 +1,3 @@
-import { ClientModel } from "./client.model";
-
 export interface UserCreateDto {
   name: string;
   firstName: string;
@@ -15,7 +13,6 @@ export class UserModel {
   firstName: string;
   lastName: string;
   email: string;
-  client?: ClientModel; // if undefined, user is offline
 
   constructor(userCreate: UserCreateDto) {
     this.name = userCreate.name;
