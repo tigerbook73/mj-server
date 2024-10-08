@@ -155,28 +155,38 @@ export class MjGameGateway
     @MessageBody() data: GameRequest,
     @ConnectedSocket() client: Socket,
   ): void {
-    const clientModel = this.clientService.findById(client.id);
-    if (!clientModel) {
-      throw new Error("Client not found");
-    }
+    try {
+      const clientModel = this.clientService.findById(client.id);
+      if (!clientModel) {
+        throw new Error("Client not found");
+      }
 
-    const handler = this.messageHandlers.get(data.type);
-    if (!handler) {
-      throw new Error(`Handler not found for ${data.type}`);
-    }
+      const handler = this.messageHandlers.get(data.type);
+      if (!handler) {
+        throw new Error(`Handler not found for ${data.type}`);
+      }
 
-    const response = handler.handler.call(this, data, clientModel);
+      const response = handler.handler.call(this, data, clientModel);
 
-    client.emit("mj:game", response);
+      client.emit("mj:game", response);
 
-    if (handler.update) {
-      this.server.emit("mj:game", {
-        type: GameEventType.GAME_UPDATED,
-        data: {
-          clients: this.clientService.findAll(),
-          rooms: this.roomService.findAll(),
-        },
-      });
+      if (handler.update) {
+        this.server.emit("mj:game", {
+          type: GameEventType.GAME_UPDATED,
+          data: {
+            clients: this.clientService.findAll(),
+            rooms: this.roomService.findAll(),
+          },
+        });
+      }
+    } catch (error) {
+      const response: GameResponse = {
+        type: data.type,
+        status: "error",
+        message: error.message,
+      };
+      client.emit("mj:game", response);
+      return;
     }
   }
 
