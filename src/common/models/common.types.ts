@@ -1,11 +1,16 @@
 export enum Position {
-  East = "East",
-  West = "West",
-  North = "North",
-  South = "South",
+  East = "east",
+  West = "west",
+  North = "north",
+  South = "south",
 }
 
 export enum PlayerRole {
   Player = "player",
   Observer = "observer",
+}
+
+export enum UserType {
+  Human = "human",
+  Bot = "bot",
 }

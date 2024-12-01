@@ -11,10 +11,18 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import {
+  CreateRoomRequest,
+  CreateRoomResponse,
+  DeleteRoomRequest,
+  DeleteRoomResponse,
+  DeleteUserRequest,
+  DeleteUserResponse,
   GameEventType,
   GameRequest,
   GameRequestType,
   GameResponse,
+  JoinRoomRequest,
+  JoinRoomResponse,
   ListClientRequest,
   ListClientResponse,
   ListRoomRequest,
@@ -35,7 +43,7 @@ import { ClientModel } from "src/common/models/client.model";
 
 type RequestHandler = {
   update: boolean;
-  handler: (data: GameRequest, client?: Socket) => GameResponse;
+  handler: (request: GameRequest, client: ClientModel) => GameResponse;
 };
 
 @WebSocketGateway({
@@ -100,7 +108,8 @@ export class MjGameGateway
     public gameService: MjGameService,
   ) {
     //
-    this.messageHandlers = new Map<string, any>([
+    this.messageHandlers = new Map<string, RequestHandler>([
+      // Authentication
       [
         GameRequestType.SIGN_IN,
         { update: true, handler: this.handleSignInRequest },
@@ -109,17 +118,43 @@ export class MjGameGateway
         GameRequestType.SIGN_OUT,
         { update: true, handler: this.handleSignOutRequest },
       ],
+
+      // clients
       [
         GameRequestType.LIST_CLIENT,
         { update: false, handler: this.handleListClientRequest },
       ],
+
+      // users
       [
         GameRequestType.LIST_USER,
         { update: false, handler: this.handleListUserRequest },
       ],
       [
+        GameRequestType.DELETE_USER,
+        { update: true, handler: this.handleDeleteUserRequest },
+      ],
+
+      // rooms
+      [
         GameRequestType.LIST_ROOM,
         { update: false, handler: this.handleListRoomRequest },
+      ],
+      [
+        GameRequestType.CREATE_ROOM,
+        { update: true, handler: this.handleCreateRoomRequest },
+      ],
+      [
+        GameRequestType.DELETE_ROOM,
+        { update: true, handler: this.handleDeleteRoomRequest },
+      ],
+      [
+        GameRequestType.JOIN_ROOM,
+        { update: true, handler: this.handleJoinRoomRequest },
+      ],
+      [
+        GameRequestType.LEAVE_ROOM,
+        { update: true, handler: this.handleLeaveRoomRequest },
       ],
     ]);
   }
@@ -192,7 +227,7 @@ export class MjGameGateway
 
   handleSignInRequest(
     request: SignInRequest,
-    client: ClientModel,
+    client?: ClientModel,
   ): SignInResponse {
     const user = this.authService.signIn(request.data, client);
     return {
@@ -213,10 +248,7 @@ export class MjGameGateway
     };
   }
 
-  handleListClientRequest(
-    request: ListClientRequest,
-    // client: ClientModel,
-  ): ListClientResponse {
+  handleListClientRequest(request: ListClientRequest): ListClientResponse {
     const clients = this.clientService.findAll();
     return {
       type: request.type,
@@ -234,12 +266,92 @@ export class MjGameGateway
     };
   }
 
+  handleDeleteUserRequest(request: DeleteUserRequest): DeleteUserResponse {
+    const user = this.userService.find(request.data.name);
+    if (!user) {
+      throw new Error(`User ${request.data.name} not found.`);
+    }
+
+    this.userService.delete(user.name);
+    return {
+      type: request.type,
+      status: "success",
+      data: user,
+    };
+  }
+
   handleListRoomRequest(request: ListRoomRequest): ListRoomResponse {
     const rooms = this.roomService.findAll();
     return {
       type: request.type,
       status: "success",
       data: rooms,
+    };
+  }
+
+  handleCreateRoomRequest(request: CreateRoomRequest): CreateRoomResponse {
+    const room = this.roomService.create(request.data);
+    return {
+      type: request.type,
+      status: "success",
+      data: room,
+    };
+  }
+
+  handleDeleteRoomRequest(request: DeleteRoomRequest): DeleteRoomResponse {
+    const room = this.roomService.find(request.data.name);
+    if (!room) {
+      throw new Error(`Room ${request.data.name} not found.`);
+    }
+
+    this.roomService.delete(room);
+    return {
+      type: request.type,
+      status: "success",
+    };
+  }
+
+  handleJoinRoomRequest(
+    request: JoinRoomRequest,
+    client: ClientModel,
+  ): JoinRoomResponse {
+    const room = this.roomService.find(request.data.roomName);
+    if (!room) {
+      throw new Error(`Room ${request.data.roomName} not found.`);
+    }
+
+    const user = this.clientService.findById(client.id)?.user;
+    if (!user) {
+      throw new Error(`User not logged in.`);
+    }
+
+    this.roomService.joinRoom(user, room, request.data.position);
+    return {
+      type: request.type,
+      status: "success",
+      data: room,
+    };
+  }
+
+  handleLeaveRoomRequest(
+    request: JoinRoomRequest,
+    client: ClientModel,
+  ): JoinRoomResponse {
+    const room = this.roomService.find(request.data.roomName);
+    if (!room) {
+      throw new Error(`Room ${request.data.roomName} not found.`);
+    }
+
+    const user = this.clientService.findById(client.id)?.user;
+    if (!user) {
+      throw new Error(`User not logged in.`);
+    }
+
+    this.roomService.leaveRoom(user);
+    return {
+      type: request.type,
+      status: "success",
+      data: room,
     };
   }
 }

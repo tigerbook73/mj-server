@@ -7,18 +7,15 @@ import {
 import { UserModel } from "src/common/models/user.model";
 import { UserService } from "./user.service";
 import { PlayerModel } from "src/common/models/player.model";
-import { PlayerRole, Position } from "src/common/models/common.types";
+import { PlayerRole, Position, UserType } from "src/common/models/common.types";
 
 @Injectable()
 export class RoomService {
   public rooms: RoomModel[] = [];
 
   constructor(private userService: UserService) {
-    //
-    this.rooms = [
-      // default room
-      new RoomModel({ name: "default" }),
-    ];
+    // default room
+    this.create({ name: "default" });
   }
 
   create(roomCreate: RoomCreateDto): RoomModel {
@@ -27,6 +24,29 @@ export class RoomService {
     }
 
     const room = new RoomModel(roomCreate);
+    room.players = [
+      new PlayerModel(
+        this.userService.findBot(Position.East),
+        room,
+        Position.East,
+      ),
+      new PlayerModel(
+        this.userService.findBot(Position.South),
+        room,
+        Position.South,
+      ),
+      new PlayerModel(
+        this.userService.findBot(Position.West),
+        room,
+        Position.West,
+      ),
+      new PlayerModel(
+        this.userService.findBot(Position.North),
+        room,
+        Position.North,
+      ),
+    ];
+
     this.rooms.push(room);
     return room;
   }
@@ -68,7 +88,8 @@ export class RoomService {
     }
 
     // position must be available
-    if (room.findPlayerByPosition(position)) {
+    const currentPlayer = room.findPlayerByPosition(position);
+    if (currentPlayer.type !== UserType.Bot) {
       throw new Error(`Position ${position} is already taken.`);
     }
 
@@ -79,12 +100,14 @@ export class RoomService {
       }
     }
 
+    // remove robot player from room
+    room.players = room.players.filter(
+      (player) => player.position !== currentPlayer.position,
+    );
+
     // add user to room
     const player = new PlayerModel(user, room, position, role);
     room.players.push(player);
-
-    // send event to all subscribers
-    // ...
 
     return player;
   }
@@ -110,8 +133,16 @@ export class RoomService {
     }
 
     // remove user from room
+    const playerToRemove = room.findPlayer(user.name);
     room.players = room.players.filter(
-      (player) => player.userName !== user.name,
+      (player) => player.userName !== playerToRemove.userName,
+    );
+    room.players.push(
+      new PlayerModel(
+        this.userService.findBot(playerToRemove.position),
+        room,
+        playerToRemove.position,
+      ),
     );
 
     // send event to all subscribers
