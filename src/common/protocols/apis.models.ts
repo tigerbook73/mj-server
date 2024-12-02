@@ -39,14 +39,14 @@ export enum GameRequestType {
 
 export interface GameRequest {
   type: GameRequestType;
-  data: any;
+  data?: unknown;
 }
 
 export interface GameResponse {
   type: string;
   status: "success" | "error";
   message?: string;
-  data?: any;
+  data?: unknown;
 }
 
 export interface SignInRequest extends GameRequest {
