@@ -1,5 +1,5 @@
 import { ClientModel } from "../models/client.model";
-import { Position } from "../models/common.types";
+import { PlayerPosition } from "../models/common.types";
 import { MjGameModel } from "../models/mj.game.model";
 import { RoomCreateDto, RoomModel } from "../models/room.model";
 import { UserModel } from "../models/user.model";
@@ -133,7 +133,7 @@ export interface JoinRoomRequest extends GameRequest {
   type: GameRequestType.JOIN_ROOM;
   data: {
     roomName: string;
-    position: Position;
+    position: PlayerPosition;
   };
 }
 

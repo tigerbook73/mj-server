@@ -7,15 +7,26 @@ import {
 import { UserModel } from "src/common/models/user.model";
 import { UserService } from "./user.service";
 import { PlayerModel } from "src/common/models/player.model";
-import { PlayerRole, Position, UserType } from "src/common/models/common.types";
+import {
+  PlayerRole,
+  PlayerPosition,
+  UserType,
+} from "src/common/models/common.types";
+import { MjGameModel } from "src/common/models/mj.game.model";
+import { MjGameService } from "./mj-game.service";
 
 @Injectable()
 export class RoomService {
   public rooms: RoomModel[] = [];
 
-  constructor(private userService: UserService) {
+  constructor(
+    private userService: UserService,
+    private gameService: MjGameService,
+  ) {
     // default room
-    this.create({ name: "default" });
+    const room = this.create({ name: "default" });
+
+    this.startGame(room);
   }
 
   create(roomCreate: RoomCreateDto): RoomModel {
@@ -26,24 +37,24 @@ export class RoomService {
     const room = new RoomModel(roomCreate);
     room.players = [
       new PlayerModel(
-        this.userService.findBot(Position.East),
+        this.userService.findBot(PlayerPosition.East),
         room,
-        Position.East,
+        PlayerPosition.East,
       ),
       new PlayerModel(
-        this.userService.findBot(Position.South),
+        this.userService.findBot(PlayerPosition.South),
         room,
-        Position.South,
+        PlayerPosition.South,
       ),
       new PlayerModel(
-        this.userService.findBot(Position.West),
+        this.userService.findBot(PlayerPosition.West),
         room,
-        Position.West,
+        PlayerPosition.West,
       ),
       new PlayerModel(
-        this.userService.findBot(Position.North),
+        this.userService.findBot(PlayerPosition.North),
         room,
-        Position.North,
+        PlayerPosition.North,
       ),
     ];
 
@@ -79,7 +90,7 @@ export class RoomService {
   joinRoom(
     user: UserModel,
     room: RoomModel,
-    position: Position,
+    position: PlayerPosition,
     role = PlayerRole.Player,
   ): PlayerModel {
     // room must be open
@@ -147,5 +158,47 @@ export class RoomService {
 
     // send event to all subscribers
     // ...
+  }
+
+  startGame(room: RoomModel): MjGameModel {
+    // room must be open
+    if (room.state !== RoomStatus.Open) {
+      throw new Error(`Room ${room.name} is not open.`);
+    }
+
+    // room must have 4 players
+    if (room.players.length !== 4) {
+      throw new Error(`Room ${room.name} must have 4 players.`);
+    }
+
+    // start game
+    room.game = this.gameService.startGame(room);
+
+    // change room status
+    room.state = RoomStatus.Started;
+
+    return room.game;
+  }
+
+  stopGame(room: RoomModel): void {
+    // room must be started
+    if (room.state !== RoomStatus.Started) {
+      throw new Error(`Room ${room.name} is not started.`);
+    }
+
+    // stop game
+    this.gameService.stopGame(room.game);
+
+    // change room status
+    room.state = RoomStatus.Finished;
+  }
+
+  endGame(room: RoomModel): void {
+    // reset game
+    this.gameService.endGame(room.game);
+    room.game = null;
+
+    // change room status
+    room.state = RoomStatus.Open;
   }
 }

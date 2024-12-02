@@ -1,4 +1,5 @@
-import { Position } from "./common.types";
+import { PlayerPosition } from "./common.types";
+import { MjGameModel } from "./mj.game.model";
 import { PlayerModel } from "./player.model";
 
 export interface RoomCreateDto {
@@ -15,18 +16,20 @@ export class RoomModel {
   name: string;
   state: RoomStatus;
   players: PlayerModel[];
+  game: MjGameModel;
 
   constructor(roomCreate: RoomCreateDto) {
     this.name = roomCreate.name;
     this.state = RoomStatus.Open;
     this.players = [];
+    this.game = null;
   }
 
   findPlayer(userName: string): PlayerModel {
     return this.players.find((player) => player.userName === userName) ?? null;
   }
 
-  findPlayerByPosition(position: Position): PlayerModel {
+  findPlayerByPosition(position: PlayerPosition): PlayerModel {
     return this.players.find((player) => player.position === position) ?? null;
   }
 }

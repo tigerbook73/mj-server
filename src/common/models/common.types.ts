@@ -1,4 +1,4 @@
-export enum Position {
+export enum PlayerPosition {
   East = "east",
   West = "west",
   North = "north",

@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { Position, UserType } from "src/common/models/common.types";
+import { PlayerPosition, UserType } from "src/common/models/common.types";
 import { UserCreateDto, UserModel } from "src/common/models/user.model";
 
 @Injectable()
@@ -9,10 +9,10 @@ export class UserService {
   constructor() {
     // create default BOT users
     this.users = [
-      this.createBot(Position.East),
-      this.createBot(Position.South),
-      this.createBot(Position.West),
-      this.createBot(Position.North),
+      this.createBot(PlayerPosition.East),
+      this.createBot(PlayerPosition.South),
+      this.createBot(PlayerPosition.West),
+      this.createBot(PlayerPosition.North),
     ];
   }
 
@@ -29,7 +29,7 @@ export class UserService {
     return user;
   }
 
-  createBot(position: Position): UserModel {
+  createBot(position: PlayerPosition): UserModel {
     if (this.findBot(position)) {
       throw new Error(`Bot with position ${position} already exists.`);
     }
@@ -60,7 +60,7 @@ export class UserService {
     return this.users;
   }
 
-  findBot(position: Position): UserModel {
+  findBot(position: PlayerPosition): UserModel {
     return (
       this.users.find(
         (user) => user.type === UserType.Bot && user.firstName === position,

@@ -1,6 +1,6 @@
 import { RoomModel } from "./room.model";
 import { UserModel } from "./user.model";
-import { PlayerRole, UserType, Position } from "./common.types";
+import { PlayerRole, UserType, PlayerPosition } from "./common.types";
 
 /**
  * Represents a user in one game.
@@ -10,12 +10,12 @@ export class PlayerModel {
   roomName: string; // room name
   role: PlayerRole; // player role: Player or Observer
   type: UserType; // player type: Human or Bot
-  position: Position; // player position: East, West, North, South
+  position: PlayerPosition; // player position: East, West, North, South
 
   constructor(
     user: UserModel,
     room: RoomModel,
-    position: Position,
+    position: PlayerPosition,
     role = PlayerRole.Player,
   ) {
     this.userName = user.name;
