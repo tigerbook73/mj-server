@@ -7,7 +7,7 @@ import { RoomModel } from "src/common/models/room.model";
 
 @Injectable()
 export class MjGameService {
-  games: MjGameModel[]; // TODO: more attributes required
+  games: MjGameModel[] = [];
 
   constructor() {
     //

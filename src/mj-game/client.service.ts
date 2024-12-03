@@ -20,7 +20,7 @@ export class ClientService {
     return this.clients.find((client) => client.id === id) ?? null;
   }
 
-  findBySocket(socket: any): ClientModel {
+  findBySocket(socket: unknown): ClientModel {
     return this.clients.find((client) => client.socket === socket) ?? null;
   }
 
