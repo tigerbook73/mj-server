@@ -31,7 +31,7 @@ export class UserModel {
     this.type = type;
   }
 
-  toJSON(): any {
+  toJSON() {
     return {
       name: this.name,
       firstName: this.firstName,

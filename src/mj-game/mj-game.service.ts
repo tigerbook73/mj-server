@@ -15,6 +15,7 @@ export class MjGameService {
 
   startGame(room: RoomModel): MjGameModel {
     const game = new MjGameModel(room);
+    this.games.push(game);
     game.startGame();
     return game;
   }

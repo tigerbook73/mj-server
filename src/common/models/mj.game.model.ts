@@ -1,73 +1,70 @@
 import { Game, Player, Position } from "../core/mj.game";
 import { RoomModel } from "./room.model";
 
-interface State {
-  name: string;
-  gameModel: MjGameModel;
-  onEnter(data: any): void;
-  onLeave(): void;
-  onEvent(event: string, data: any): void;
-}
+// class State {
+//   name: string;
+//   gameModel: MjGameModel;
+//   onEnter(data: unknown): void;
+//   onLeave(): void;
+//   onEvent(event: string, data: unknown): void;
+// }
 
-const defaultState: State = {
-  name: "default",
-  gameModel: null,
-  onEnter(data: any) {
-    void data;
-  },
-  onLeave() {},
-  onEvent() {},
-};
+// const defaultState: State = {
+//   name: "default",
+//   gameModel: null,
+//   onEnter(data: unknown) {
+//     void data;
+//   },
+//   onLeave() {},
+//   onEvent() {},
+// };
 
 export class MjGameModel {
-  public room: RoomModel = null;
-  public mjGame: Game = null;
-
-  constructor(room: RoomModel) {
-    this.room = room;
-    this.mjGame = new Game();
-  }
+  constructor(
+    public room: RoomModel,
+    public mjGame: Game = new Game(),
+  ) {}
 
   /**
    * State machine
    */
-  public previousState: State = null;
-  public currentState: State = null;
+  // public previousState: State = null;
+  // public currentState: State = null;
 
-  public initState: State = defaultState;
-  public shuffleState: State = defaultState;
-  public diceState: State = defaultState;
-  public distributeState: State = defaultState;
-  public playingState: State = defaultState;
-  public endState: State = defaultState;
+  // public initState: State = defaultState;
+  // public shuffleState: State = defaultState;
+  // public diceState: State = defaultState;
+  // public distributeState: State = defaultState;
+  // public playingState: State = defaultState;
+  // public endState: State = defaultState;
 
-  toState(state: State, data: any = null) {
-    if (this.currentState) {
-      this.currentState.onLeave();
-    }
-    this.previousState = this.currentState;
-    this.currentState = state;
-    this.currentState.onEnter(data);
-  }
+  // toState(state: State, data: any = null) {
+  //   if (this.currentState) {
+  //     this.currentState.onLeave();
+  //   }
+  //   this.previousState = this.currentState;
+  //   this.currentState = state;
+  //   this.currentState.onEnter(data);
+  // }
 
-  toInitState() {
-    this.toState(this.initState);
-  }
-  toShuffleState() {
-    this.toState(this.shuffleState);
-  }
-  toDiceState() {
-    this.toState(this.diceState);
-  }
-  toDistributeState() {
-    this.toState(this.distributeState);
-  }
-  toPlayingState() {
-    this.toState(this.playingState);
-  }
-  toEndState() {
-    this.toState(this.endState);
-  }
+  // toInitState() {
+  //   this.toState(this.initState);
+  // }
+  // toShuffleState() {
+  //   this.toState(this.shuffleState);
+  // }
+  // toDiceState() {
+  //   this.toState(this.diceState);
+  // }
+  // toDistributeState() {
+  //   this.toState(this.distributeState);
+  // }
+  // toPlayingState() {
+  //   this.toState(this.playingState);
+  // }
+  // toEndState() {
+  //   this.toState(this.endState);
+  // }
 
   startGame() {
     /**
@@ -120,7 +117,7 @@ export class MjGameModel {
     console.log("shuffle");
   }
 
-  toJSON(): any {
+  toJSON() {
     return {
       mjGame: this.mjGame,
     };

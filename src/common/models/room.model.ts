@@ -16,7 +16,7 @@ export class RoomModel {
   name: string;
   state: RoomStatus;
   players: PlayerModel[];
-  game: MjGameModel;
+  game: MjGameModel | null;
 
   constructor(roomCreate: RoomCreateDto) {
     this.name = roomCreate.name;
@@ -25,11 +25,11 @@ export class RoomModel {
     this.game = null;
   }
 
-  findPlayer(userName: string): PlayerModel {
-    return this.players.find((player) => player.userName === userName) ?? null;
+  findPlayer(userName: string): PlayerModel | undefined {
+    return this.players.find((player) => player.userName === userName);
   }
 
-  findPlayerByPosition(position: PlayerPosition): PlayerModel {
-    return this.players.find((player) => player.position === position) ?? null;
+  findPlayerByPosition(position: PlayerPosition): PlayerModel | undefined {
+    return this.players.find((player) => player.position === position);
   }
 }
