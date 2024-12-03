@@ -111,9 +111,6 @@ export class MjGameModel {
   }
 
   async shuffle() {
-    /**
-     *
-     */
     console.log("shuffle");
   }
 
