@@ -1,4 +1,3 @@
-import { Socket } from "socket.io-client";
 import { UserModel } from "./user.model";
 
 export interface ClientCreateDto {
