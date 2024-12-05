@@ -68,25 +68,25 @@ export class MjGameGateway
   export enum GameRequestType {
     // Authentication
     SIGN_IN = "signIn",
-  
+
     // clients
     LIST_CLIENT = "listClient",
-  
+
     // users
     LIST_USER = "listUser",
     DELETE_USER = "deleteUser",
-  
+
     // rooms
     CREATE_ROOM = "createRoom",
     DELETE_ROOM = "deleteRoom",
     LIST_ROOM = "listRoom",
     JOIN_ROOM = "joinRoom",
     LEAVE_ROOM = "leaveRoom",
-  
+
     // games
     START_GAME = "startGame",
     RESET_GAME = "resetGame",
-  
+
     // MJ game
     PICK_TILE = "pickTile",
     DISCARD_TILE = "discardTile",
@@ -203,7 +203,7 @@ export class MjGameGateway
 
       const response = handler.handler.call(this, data, clientModel);
 
-      client.emit("mj:game", response);
+      // client.emit("mj:game", response);
 
       if (handler.update) {
         this.server.emit("mj:game", {
@@ -214,6 +214,7 @@ export class MjGameGateway
           },
         });
       }
+      return response;
     } catch (error) {
       const response: GameResponse = {
         type: data.type,
