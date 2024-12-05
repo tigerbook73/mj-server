@@ -16,20 +16,17 @@ export class AuthService {
       throw new Error("Email or password is empty");
     }
 
-    const user = this.users.find((user) => user.email === data.email);
+    let user = this.users.find((user) => user.email === data.email);
 
     if (!user) {
-      // throw new Error("User not found");
-      // create a new user
-      const newUser = new UserModel({
+      user = new UserModel({
         name: data.email,
         firstName: "",
         lastName: "",
         email: data.email,
       });
-      newUser.password = data.password;
-
-      this.users.push(newUser);
+      user.password = data.password;
+      this.users.push(user);
     }
 
     if (user.password !== data.password) {
