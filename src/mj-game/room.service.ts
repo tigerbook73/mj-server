@@ -24,9 +24,7 @@ export class RoomService {
     private gameService: MjGameService,
   ) {
     // default room
-    const room = this.create({ name: "default" });
-
-    this.startGame(room);
+    this.create({ name: "default" });
   }
 
   create(roomCreate: RoomCreateDto): RoomModel {
