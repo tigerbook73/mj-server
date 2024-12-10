@@ -63,7 +63,7 @@ export class UserService {
   findBot(position: PlayerPosition): UserModel {
     return (
       this.users.find(
-        (user) => user.type === UserType.Bot && user.firstName === position,
+        (user) => user.type === UserType.Bot && user.lastName === position,
       ) ?? null
     );
   }
