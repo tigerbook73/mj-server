@@ -16,13 +16,19 @@ export class AuthService {
       throw new Error("Email or password is empty");
     }
 
+    // check email format is a valid email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.email)) {
+      throw new Error("Email format is invalid");
+    }
+
     let user = this.users.find((user) => user.email === data.email);
 
     if (!user) {
       user = new UserModel({
         name: data.email,
-        firstName: "",
-        lastName: "",
+        firstName: data.email.split("@")[0],
+        lastName: data.email.split("@")[1],
         email: data.email,
       });
       user.password = data.password;

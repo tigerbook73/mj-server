@@ -24,7 +24,8 @@ export class RoomService {
     private gameService: MjGameService,
   ) {
     // default room
-    this.create({ name: "default" });
+    this.create({ name: "room-1" });
+    this.create({ name: "room-2" });
   }
 
   create(roomCreate: RoomCreateDto): RoomModel {

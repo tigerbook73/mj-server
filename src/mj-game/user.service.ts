@@ -36,9 +36,9 @@ export class UserService {
 
     const bot = new UserModel(
       {
-        name: `bot${position}`,
-        firstName: position,
-        lastName: "bot",
+        name: `bot-${position}`,
+        firstName: "bot",
+        lastName: position,
         email: `${position}@mj-game.com`,
       },
       "",

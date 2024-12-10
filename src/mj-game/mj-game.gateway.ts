@@ -189,7 +189,7 @@ export class MjGameGateway
   handleMessage(
     @MessageBody() data: GameRequest,
     @ConnectedSocket() client: Socket,
-  ): void {
+  ): GameResponse {
     try {
       const clientModel = this.clientService.findById(client.id);
       if (!clientModel) {
@@ -202,8 +202,6 @@ export class MjGameGateway
       }
 
       const response = handler.handler.call(this, data, clientModel);
-
-      // client.emit("mj:game", response);
 
       if (handler.update) {
         this.server.emit("mj:game", {
@@ -221,8 +219,7 @@ export class MjGameGateway
         status: "error",
         message: error.message,
       };
-      client.emit("mj:game", response);
-      return;
+      return response;
     }
   }
 
