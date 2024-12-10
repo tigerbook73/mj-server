@@ -181,8 +181,13 @@ export class MjGameGateway
     }
 
     this.logger.log(`Client disconnected: ${client.id}`);
-
     this.clientService.delete(clientModel);
+
+    if (!clientModel.user) {
+      return;
+    }
+
+    this.roomService.dropUser(clientModel.user);
   }
 
   @SubscribeMessage("mj:game")

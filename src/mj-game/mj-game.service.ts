@@ -22,7 +22,9 @@ export class MjGameService {
 
   stopGame(game: MjGameModel): void {
     //
-    void game;
+    // stop game ...
+
+    this.games = this.games.filter((g) => g !== game);
   }
 
   endGame(game: MjGameModel): void {

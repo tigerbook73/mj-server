@@ -28,12 +28,8 @@ export class RoomService {
     this.create({ name: "room-2" });
   }
 
-  create(roomCreate: RoomCreateDto): RoomModel {
-    if (this.rooms.find((room) => room.name === roomCreate.name)) {
-      throw new Error(`Room with name ${roomCreate.name} already exists.`);
-    }
-
-    const room = new RoomModel(roomCreate);
+  resetRoom(room: RoomModel): void {
+    room.state = RoomStatus.Open;
     room.players = [
       new PlayerModel(
         this.userService.findBot(PlayerPosition.East),
@@ -56,8 +52,18 @@ export class RoomService {
         PlayerPosition.North,
       ),
     ];
+    room.game = null;
+  }
 
+  create(roomCreate: RoomCreateDto): RoomModel {
+    if (this.rooms.find((room) => room.name === roomCreate.name)) {
+      throw new Error(`Room with name ${roomCreate.name} already exists.`);
+    }
+
+    const room = new RoomModel(roomCreate);
     this.rooms.push(room);
+
+    this.resetRoom(room);
     return room;
   }
 
@@ -188,16 +194,26 @@ export class RoomService {
     // stop game
     this.gameService.stopGame(room.game);
 
-    // change room status
-    room.state = RoomStatus.Finished;
+    // reset room
+    this.resetRoom(room);
   }
 
-  endGame(room: RoomModel): void {
-    // reset game
-    this.gameService.endGame(room.game);
-    room.game = null;
+  dropUser(user: UserModel): void {
+    // drop user from all open rooms, if game is started, stop the game
+    this.findAll().forEach((room) => {
+      const player = room.findPlayer(user.name);
+      if (!player) {
+        return;
+      }
 
-    // change room status
-    room.state = RoomStatus.Open;
+      if (room.state === RoomStatus.Open) {
+        this.leaveRoom(user);
+        return;
+      }
+
+      if (room.state === RoomStatus.Started) {
+        this.stopGame(room);
+      }
+    });
   }
 }
