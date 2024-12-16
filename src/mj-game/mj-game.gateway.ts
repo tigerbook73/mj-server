@@ -33,6 +33,8 @@ import {
   SignInResponse,
   SignOutRequest,
   SignOutResponse,
+  StartGameRequest,
+  StartGameResponse,
 } from "src/common/protocols/apis.models";
 import { ClientService } from "./client.service";
 import { UserService } from "./user.service";
@@ -40,6 +42,7 @@ import { RoomService } from "./room.service";
 import { MjGameService } from "./mj-game.service";
 import { AuthService } from "./auth.service";
 import { ClientModel } from "src/common/models/client.model";
+import { RoomStatus } from "src/common/models/room.model";
 
 type RequestHandler = {
   update: boolean;
@@ -355,6 +358,24 @@ export class MjGameGateway
       type: request.type,
       status: "success",
       data: room,
+    };
+  }
+
+  handleStartGameRequest(request: StartGameRequest): StartGameResponse {
+    const room = this.roomService.find(request.data.roomName);
+    if (!room) {
+      throw new Error(`Room ${request.data.roomName} not found.`);
+    }
+
+    if (room.state !== RoomStatus.Open) {
+      throw new Error(`Room ${room.name} is not open.`);
+    }
+
+    this.gameService.startGame(room);
+    return {
+      type: request.type,
+      status: "success",
+      data: room.game,
     };
   }
 }

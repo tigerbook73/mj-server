@@ -155,6 +155,9 @@ export interface LeaveRoomResponse extends GameResponse {
 
 export interface StartGameRequest extends GameRequest {
   type: GameRequestType.START_GAME;
+  data: {
+    roomName: string;
+  };
 }
 
 export interface StartGameResponse extends GameResponse {
