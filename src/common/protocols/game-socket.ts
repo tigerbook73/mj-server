@@ -40,22 +40,7 @@ export class GameSocket {
   }
 
   sendAndWait<T>(data: GameRequest): Promise<T> {
-    return new Promise((resolve, reject) => {
-      const timeout = setTimeout(
-        () =>
-          reject({
-            type: data.type,
-            status: "error",
-            message: "timeout",
-            data: null,
-          }),
-        1000,
-      );
-      this.socket?.emit("mj:game", data, (response: T) => {
-        resolve(response);
-        clearTimeout(timeout);
-      });
-    });
+    return this.socket?.timeout(2000).emitWithAck("mj:game", data);
   }
 
   onReceive(callback: (data: GameResponse) => void) {
