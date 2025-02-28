@@ -26,17 +26,17 @@ export class TileCore {
     public name: string, // name of the tile
   ) {}
 
-  static readonly unknownTileId = 999;
+  static readonly unknownId = 999;
   static readonly unknownTile = new TileCore(
-    TileCore.unknownTileId,
+    TileCore.unknownId,
     TileType.KONG,
     0,
     "空",
   );
 
-  static readonly voidTileId = -1;
+  static readonly voidId = -1;
   static readonly voidTile = new TileCore(
-    TileCore.voidTileId,
+    TileCore.voidId,
     TileType.KONG,
     0,
     "空",
@@ -190,10 +190,10 @@ export class TileCore {
   ];
 
   static fromId(id: TileId) {
-    if (id === TileCore.unknownTileId) {
+    if (id === TileCore.unknownId) {
       return TileCore.unknownTile;
     }
-    if (id === TileCore.voidTileId) {
+    if (id === TileCore.voidId) {
       return TileCore.voidTile;
     }
     return (
@@ -211,9 +211,9 @@ export class TileCore {
   static isSame(
     tile1: TileCore | TileId,
     tile2: TileCore | TileId,
-    tile3: TileCore | TileId = TileCore.voidTileId,
+    tile3: TileCore | TileId = TileCore.voidId,
 
-    tile4: TileCore | TileId = TileCore.voidTileId,
+    tile4: TileCore | TileId = TileCore.voidId,
   ) {
     const t1 = tile1 instanceof TileCore ? tile1 : TileCore.fromId(tile1);
     const t2 = tile2 instanceof TileCore ? tile2 : TileCore.fromId(tile2);
@@ -238,12 +238,12 @@ export class TileCore {
   static isConsecutive(
     tile1: TileCore | TileId,
     tile2: TileCore | TileId,
-    tile3: TileCore | TileId = TileCore.voidTileId,
+    tile3: TileCore | TileId = TileCore.voidId,
   ) {
     const tiles = [];
     tiles.push(tile1 instanceof TileCore ? tile1 : TileCore.fromId(tile1));
     tiles.push(tile2 instanceof TileCore ? tile2 : TileCore.fromId(tile2));
-    if (tile3 !== TileCore.voidTileId) {
+    if (tile3 !== TileCore.voidId) {
       tiles.push(tile3 instanceof TileCore ? tile3 : TileCore.fromId(tile3));
     }
 

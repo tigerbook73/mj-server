@@ -39,7 +39,7 @@ export class Player {
   constructor(
     public position: Position, // 玩家的位置
     public handTiles: TileId[] = [], // 玩家手里的牌，不包含已经碰，吃，杠的牌
-    public picked: TileId = TileCore.voidTileId, // 玩家最后一次摸的牌
+    public picked: TileId = TileCore.voidId, // 玩家最后一次摸的牌
     public openedSets: OpenedSet[] = [], // 玩家已经碰，吃，杠的牌
   ) {}
 }
@@ -82,7 +82,7 @@ export class Game {
   public walls: Wall[] = [];
   public discards: Discard[] = [];
   public state: GameState = GameState.Init;
-  public latestTile: TileId = TileCore.voidTileId;
+  public latestTile: TileId = TileCore.voidId;
   public current: Player | null = null;
   public dealer: Player | null = null;
   public pickPosition: Position = Position.East;
@@ -105,7 +105,7 @@ export class Game {
     for (let position = Position.East; position <= Position.North; position++) {
       this.walls[position] = new Wall(position);
       this.walls[position].tiles.length = TileCore.allTiles.length / 4;
-      this.walls[position].tiles.fill(TileCore.voidTileId);
+      this.walls[position].tiles.fill(TileCore.voidId);
     }
 
     // discard
@@ -115,7 +115,7 @@ export class Game {
     }
 
     this.state = GameState.Init;
-    this.latestTile = TileCore.voidTileId;
+    this.latestTile = TileCore.voidId;
     this.current = null;
     this.dealer = null;
   }
@@ -208,7 +208,7 @@ export class Game {
     if (from === "start") {
       const wall = this.walls[this.pickPosition];
       const taken = wall.tiles[this.pickIndex];
-      wall.tiles[this.pickIndex] = TileCore.voidTileId;
+      wall.tiles[this.pickIndex] = TileCore.voidId;
 
       this.pickIndex++;
       if (this.pickIndex >= this.walls[this.pickPosition].tiles.length) {
@@ -221,7 +221,7 @@ export class Game {
       const upper = Math.floor(this.reversePickIndex / 2) * 2; // 上面一个
       const pick = wall.tiles[upper] ? upper : upper + 1; // 上面一个不为空，取上面一个，否则去下面一个
       const taken = wall.tiles[pick];
-      wall.tiles[pick] = TileCore.voidTileId;
+      wall.tiles[pick] = TileCore.voidId;
 
       this.reversePickIndex--;
       if (this.reversePickIndex < 0) {
@@ -241,7 +241,7 @@ export class Game {
     // 3. each player gets 1 tile for 1 time
     // 4. the dealer gets 1 more tile
     // 6. pick from the wall with position == this.pickPosition, index from this.pickIndex
-    // 7. when picked, the wall[picked] = TileCore.voidTileId
+    // 7. when picked, the wall[picked] = TileCore.voidId
 
     if (!this.dealer) {
       throw new Error("dealer is not assigned");
@@ -308,7 +308,7 @@ export class Game {
       throw new Error("not your turn");
     }
 
-    if (player.picked !== TileCore.voidTileId) {
+    if (player.picked !== TileCore.voidId) {
       throw new Error("you have already picked a tile");
     }
 
@@ -335,9 +335,9 @@ export class Game {
     if (index !== -1) {
       player.handTiles.splice(index, 1);
       player.handTiles.push(player.picked);
-      player.picked = TileCore.voidTileId;
+      player.picked = TileCore.voidId;
     } else {
-      player.picked = TileCore.voidTileId;
+      player.picked = TileCore.voidId;
     }
 
     this.discards[player.position].tiles.push(tile);
