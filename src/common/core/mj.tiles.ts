@@ -1,43 +1,18 @@
-/**
- * id is the unique identifier for the tile
- * id is also the index of the tile in the allTiles array
- * id = 999 is the unknown tile
- * id = others (e.g -1) are empty tiles (no tiles)
- */
-
 import { TileId, TileType } from "./mj.interface";
 
 export class TileCore {
+  /**
+   * id 是牌的唯一标识(4个牌面相同的牌id是不同的)
+   * id 也是 allTiles 数组中牌的索引
+   * id = 999 是未知牌
+   * id = 其他 (例如 -1) 是空牌 (没有牌)
+   */
   constructor(
-    public id: TileId,
-    public type: TileType,
-    public index: number,
-    public name: string,
+    public id: TileId, // unique identifier for the tile instance
+    public type: TileType, // type of the tile
+    public index: number, // index of the tile in the type
+    public name: string, // name of the tile
   ) {}
-
-  isWan() {
-    return this.type === TileType.WAN;
-  }
-
-  isTong() {
-    return this.type === TileType.TONG;
-  }
-
-  isTiao() {
-    return this.type === TileType.TIAO;
-  }
-
-  isJian() {
-    return this.type === TileType.JIAN;
-  }
-
-  isOne() {
-    return this.index === 1;
-  }
-
-  isNine() {
-    return this.index === 9;
-  }
 }
 
 // 未知牌，用于表示未知牌
