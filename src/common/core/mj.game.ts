@@ -49,11 +49,12 @@ export class Player {
  * 游戏状态
  */
 export enum GameState {
-  Init = "init",
-  Dispatching = "dispatching",
-  Playing = "playing",
-  Paused = "paused",
-  End = "end",
+  Init = "init", // 初始化
+  Dispatching = "dispatching", // 发牌中，后续可以拆分成更小的状态
+  WaitingCurrent = "wating_current", // 等待玩家操作: 胡/暗杠/打牌
+  WaitingAction = "waiting-action", // 等待玩家操作: 碰/杠/吃/过
+  WaitingPick = "waiting-pick", // 等待玩家操作: 摸牌
+  End = "end", // 游戏结束
 }
 
 /**
