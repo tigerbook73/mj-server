@@ -249,6 +249,7 @@ export class Game {
 
     this.state = GameState.Dispatching;
 
+    // each player pick 12 tiles
     for (let i = 0; i < 3; i++) {
       let position = this.dealer.position;
       for (let j = 0; j < 4; j++) {
@@ -263,6 +264,7 @@ export class Game {
       }
     }
 
+    // each player pick 1 tile
     {
       let position = this.dealer.position;
       for (let j = 0; j < 4; j++) {
@@ -274,6 +276,7 @@ export class Game {
       }
     }
 
+    // dealer pick 1 more tile
     {
       this.dealer.handTiles.push(this.pickTile());
     }
