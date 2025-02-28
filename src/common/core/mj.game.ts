@@ -1,4 +1,4 @@
-import { MjCore } from "./mj.tiles";
+import { TileCore } from "./mj.tile-core";
 import { TileId } from "./mj.interface";
 
 /**
@@ -40,7 +40,7 @@ export class Player {
   constructor(
     public position: Position, // 玩家的位置
     public handTiles: TileId[] = [], // 玩家手里的牌，不包含已经碰，吃，杠的牌
-    public picked: TileId = MjCore.voidTileId, // 玩家最后一次摸的牌
+    public picked: TileId = TileCore.voidTileId, // 玩家最后一次摸的牌
     public openedSets: OpenedSet[] = [], // 玩家已经碰，吃，杠的牌
   ) {}
 }
@@ -83,7 +83,7 @@ export class Game {
   public walls: Wall[] = [];
   public discards: Discard[] = [];
   public state: GameState = GameState.Init;
-  public latestTile: TileId = MjCore.voidTileId;
+  public latestTile: TileId = TileCore.voidTileId;
   public current: Player | null = null;
   public dealer: Player | null = null;
   public pickPosition: Position = Position.East;
@@ -105,8 +105,8 @@ export class Game {
     this.walls.length = 4;
     for (let position = Position.East; position <= Position.North; position++) {
       this.walls[position] = new Wall(position);
-      this.walls[position].tiles.length = MjCore.allTiles.length / 4;
-      this.walls[position].tiles.fill(MjCore.voidTileId);
+      this.walls[position].tiles.length = TileCore.allTiles.length / 4;
+      this.walls[position].tiles.fill(TileCore.voidTileId);
     }
 
     // discard
@@ -116,7 +116,7 @@ export class Game {
     }
 
     this.state = GameState.Init;
-    this.latestTile = MjCore.voidTileId;
+    this.latestTile = TileCore.voidTileId;
     this.current = null;
     this.dealer = null;
   }
@@ -161,7 +161,7 @@ export class Game {
    * shuffle tiles and add to walls
    */
   shuffle() {
-    const tiles = MjCore.allTiles.slice().map((tile) => tile.id);
+    const tiles = TileCore.allTiles.slice().map((tile) => tile.id);
     this.shuffleArray(tiles);
 
     for (let index = 0; index < this.walls.length; index++) {
@@ -209,7 +209,7 @@ export class Game {
     if (from === "start") {
       const wall = this.walls[this.pickPosition];
       const taken = wall.tiles[this.pickIndex];
-      wall.tiles[this.pickIndex] = MjCore.voidTileId;
+      wall.tiles[this.pickIndex] = TileCore.voidTileId;
 
       this.pickIndex++;
       if (this.pickIndex >= this.walls[this.pickPosition].tiles.length) {
@@ -222,7 +222,7 @@ export class Game {
       const upper = Math.floor(this.reversePickIndex / 2) * 2; // 上面一个
       const pick = wall.tiles[upper] ? upper : upper + 1; // 上面一个不为空，取上面一个，否则去下面一个
       const taken = wall.tiles[pick];
-      wall.tiles[pick] = MjCore.voidTileId;
+      wall.tiles[pick] = TileCore.voidTileId;
 
       this.reversePickIndex--;
       if (this.reversePickIndex < 0) {
@@ -242,7 +242,7 @@ export class Game {
     // 3. each player gets 1 tile for 1 time
     // 4. the dealer gets 1 more tile
     // 6. pick from the wall with position == this.pickPosition, index from this.pickIndex
-    // 7. when picked, the wall[picked] = MjCore.voidTileId
+    // 7. when picked, the wall[picked] = TileCore.voidTileId
 
     if (!this.dealer) {
       throw new Error("dealer is not assigned");
@@ -309,7 +309,7 @@ export class Game {
       throw new Error("not your turn");
     }
 
-    if (player.picked !== MjCore.voidTileId) {
+    if (player.picked !== TileCore.voidTileId) {
       throw new Error("you have already picked a tile");
     }
 
@@ -336,9 +336,9 @@ export class Game {
     if (index !== -1) {
       player.handTiles.splice(index, 1);
       player.handTiles.push(player.picked);
-      player.picked = MjCore.voidTileId;
+      player.picked = TileCore.voidTileId;
     } else {
-      player.picked = MjCore.voidTileId;
+      player.picked = TileCore.voidTileId;
     }
 
     this.discards[player.position].tiles.push(tile);
@@ -426,16 +426,16 @@ export class Game {
     }
 
     // sort tiles
-    MjCore.sortTiles(tiles);
+    TileCore.sortTiles(tiles);
 
     for (let i = 0; i < tiles.length - 1; i++) {
-      if (MjCore.isSameTiles(tiles[i], tiles[i + 1])) {
+      if (TileCore.isSame(tiles[i], tiles[i + 1])) {
         const rest = tiles.slice(i, 2);
 
         const result = [];
 
         while (rest.length >= 3) {
-          if (MjCore.isSameTiles(rest[0], rest[1], rest[2])) {
+          if (TileCore.isSame(rest[0], rest[1], rest[2])) {
             result.push([rest[0], rest[1], rest[2]]);
             rest.splice(0, 3);
             continue;
@@ -447,7 +447,7 @@ export class Game {
 
           // find a consecutive tiles for t1
           for (let j = t1 + 1; j < rest.length - 1; j++) {
-            if (MjCore.isConsecutiveTiles(rest[t1], rest[j])) {
+            if (TileCore.isConsecutive(rest[t1], rest[j])) {
               t2 = j;
               break;
             }
@@ -458,7 +458,7 @@ export class Game {
 
           // find a consecutive tiles for t2
           for (let j = t2 + 1; j < rest.length; j++) {
-            if (MjCore.isConsecutiveTiles(rest[t2], rest[j])) {
+            if (TileCore.isConsecutive(rest[t2], rest[j])) {
               t3 = j;
               break;
             }
@@ -487,8 +487,7 @@ export class Game {
     let i = 0;
     while (i < tiles.length - 1) {
       if (
-        MjCore.tileFromId(tiles[i]).name !==
-        MjCore.tileFromId(tiles[i + 1]).name
+        TileCore.fromId(tiles[i]).name !== TileCore.fromId(tiles[i + 1]).name
       ) {
         continue;
       }
@@ -499,7 +498,7 @@ export class Game {
       // change i to next tile with diffent name
       while (
         i < tiles.length - 1 &&
-        MjCore.tileFromId(first).name === MjCore.tileFromId(tiles[i + 1]).name
+        TileCore.fromId(first).name === TileCore.fromId(tiles[i + 1]).name
       ) {
         i++;
       }
