@@ -1,5 +1,4 @@
-import { TileCore } from "./mj.tile-core";
-import { TileId } from "./mj.interface";
+import { type TileId, TileCore } from "./mj.tile-core";
 
 /**
  * 动作类型

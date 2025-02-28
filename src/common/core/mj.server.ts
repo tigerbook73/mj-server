@@ -1,6 +1,0 @@
-export class MjServer {
-  //
-  constructor() {
-    //
-  }
-}
