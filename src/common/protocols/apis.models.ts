@@ -3,6 +3,7 @@ import { PlayerPosition } from "../models/common.types";
 import { MjGameModel } from "../models/mj.game.model";
 import { RoomCreateDto, RoomModel } from "../models/room.model";
 import { UserModel } from "../models/user.model";
+import { GameSocket } from "./game-socket";
 
 export enum GameRequestType {
   // Authentication
@@ -43,7 +44,7 @@ export interface GameRequest {
 }
 
 export interface GameResponse {
-  type: string;
+  type: GameRequestType;
   status: "success" | "error";
   message?: string;
   data?: unknown;
@@ -193,4 +194,225 @@ export interface GameEvent {
     clients: ClientModel[];
     rooms: RoomModel[];
   };
+}
+
+export class ClientApi {
+  constructor(public gameSocket: GameSocket) {}
+
+  /**
+   * auth APIs
+   */
+
+  protected async sendSignInRequest(
+    request: SignInRequest,
+  ): Promise<SignInResponse> {
+    return this.gameSocket.sendAndWait<SignInResponse>(request);
+  }
+
+  protected async sendSignOutRequest(
+    request: SignOutRequest,
+  ): Promise<SignOutResponse> {
+    return this.gameSocket.sendAndWait<SignOutResponse>(request);
+  }
+
+  /**
+   * client APIs
+   */
+  protected async sendListClientRequest(
+    request: ListClientRequest,
+  ): Promise<ListClientResponse> {
+    return this.gameSocket.sendAndWait<ListClientResponse>(request);
+  }
+
+  /**
+   * user APIs
+   */
+  protected async sendListUserRequest(
+    request: ListUserRequest,
+  ): Promise<ListUserResponse> {
+    return this.gameSocket.sendAndWait<ListUserResponse>(request);
+  }
+
+  protected async sendDeleteUserRequest(
+    request: DeleteUserRequest,
+  ): Promise<DeleteUserResponse> {
+    return this.gameSocket.sendAndWait<DeleteUserResponse>(request);
+  }
+
+  /**
+   * room APIs
+   */
+  protected async sendCreateRoomRequest(
+    request: CreateRoomRequest,
+  ): Promise<CreateRoomResponse> {
+    return this.gameSocket.sendAndWait(request);
+  }
+
+  protected async sendDeleteRoomRequest(
+    request: DeleteRoomRequest,
+  ): Promise<DeleteRoomResponse> {
+    return this.gameSocket.sendAndWait<DeleteRoomResponse>(request);
+  }
+
+  protected async sendListRoomRequest(
+    request: ListRoomRequest,
+  ): Promise<ListRoomResponse> {
+    return this.gameSocket.sendAndWait<ListRoomResponse>(request);
+  }
+
+  protected async sendJoinRoomRequest(
+    request: JoinRoomRequest,
+  ): Promise<JoinRoomResponse> {
+    return this.gameSocket.sendAndWait<JoinRoomResponse>(request);
+  }
+
+  protected async sendLeaveRoomRequest(
+    request: LeaveRoomRequest,
+  ): Promise<LeaveRoomResponse> {
+    return this.gameSocket.sendAndWait<LeaveRoomResponse>(request);
+  }
+
+  /**
+   * game APIs
+   */
+  protected async sendStartGameRequest(
+    request: StartGameRequest,
+  ): Promise<StartGameResponse> {
+    return this.gameSocket.sendAndWait<StartGameResponse>(request);
+  }
+
+  protected async sendResetGameRequest(
+    request: resetGameRequest,
+  ): Promise<resetGameResponse> {
+    return this.gameSocket.sendAndWait<resetGameResponse>(request);
+  }
+
+  /**
+   * Easy APIs
+   */
+
+  /**
+   * auth APIs
+   */
+  async signIn(email: string, password: string): Promise<UserModel> {
+    const request: SignInRequest = {
+      type: GameRequestType.SIGN_IN,
+      data: {
+        email,
+        password,
+      },
+    };
+    const response = await this.sendSignInRequest(request);
+    return response.data;
+  }
+
+  async signOut(): Promise<void> {
+    const request: SignOutRequest = {
+      type: GameRequestType.SIGN_OUT,
+    };
+    await this.sendSignOutRequest(request);
+  }
+
+  /**
+   * client APIs
+   */
+  async listClient(): Promise<ClientModel[]> {
+    const request: ListClientRequest = {
+      type: GameRequestType.LIST_CLIENT,
+    };
+    const response = await this.sendListClientRequest(request);
+    return response.data;
+  }
+
+  /**
+   * user APIs
+   */
+  async listUser(): Promise<UserModel[]> {
+    const request: ListUserRequest = {
+      type: GameRequestType.LIST_USER,
+    };
+    const response = await this.sendListUserRequest(request);
+    return response.data;
+  }
+
+  async deleteUser(name: string): Promise<void> {
+    const request: DeleteUserRequest = {
+      type: GameRequestType.DELETE_USER,
+      data: {
+        name,
+      },
+    };
+    await this.sendDeleteUserRequest(request);
+  }
+
+  /**
+   * room APIs
+   */
+  async createRoom(roomName: string): Promise<RoomModel> {
+    const request: CreateRoomRequest = {
+      type: GameRequestType.CREATE_ROOM,
+      data: {
+        name: roomName,
+      },
+    };
+    const response = await this.sendCreateRoomRequest(request);
+    return response.data;
+  }
+
+  async deleteRoom(roomName: string): Promise<void> {
+    const request: DeleteRoomRequest = {
+      type: GameRequestType.DELETE_ROOM,
+      data: {
+        name: roomName,
+      },
+    };
+    await this.sendDeleteRoomRequest(request);
+  }
+
+  async listRoom(): Promise<RoomModel[]> {
+    const request: ListRoomRequest = {
+      type: GameRequestType.LIST_ROOM,
+    };
+    const response = await this.sendListRoomRequest(request);
+    return response.data;
+  }
+
+  async joinRoom(
+    roomName: string,
+    position: PlayerPosition,
+  ): Promise<RoomModel> {
+    const request: JoinRoomRequest = {
+      type: GameRequestType.JOIN_ROOM,
+      data: {
+        roomName,
+        position,
+      },
+    };
+    const response = await this.sendJoinRoomRequest(request);
+    return response.data;
+  }
+
+  async leaveRoom(roomName: string): Promise<void> {
+    const request: LeaveRoomRequest = {
+      type: GameRequestType.LEAVE_ROOM,
+      data: {
+        roomName,
+      },
+    };
+    await this.sendLeaveRoomRequest(request);
+  }
+
+  /**
+   * game APIs
+   */
+  async startGame(roomName: string): Promise<MjGameModel> {
+    const request: StartGameRequest = {
+      type: GameRequestType.START_GAME,
+      data: {
+        roomName,
+      },
+    };
+    const response = await this.sendStartGameRequest(request);
+    return response.data;
+  }
 }
