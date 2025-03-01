@@ -456,8 +456,7 @@ export class Game {
     ) {
       this.setCurrentPlayer(this.getNextPlayer());
       this.pick(this.getCurrentPlayer());
-    } else {
-      this.setCurrentPlayer(this.getNextPlayer());
+      this.setState(GameState.WaitingAction);
     }
 
     return this;

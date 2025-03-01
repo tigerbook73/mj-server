@@ -1,14 +1,17 @@
 import { Game, Player, Position, GameState } from "./mj.game";
 import { TileCore } from "./mj.tile-core";
 
-describe("Game", () => {
+describe("Game Play", () => {
   let game: Game;
+  const playerEast = new Player(Position.East);
+  const playerWest = new Player(Position.West);
+  let current: Player;
 
   beforeAll(() => {
     game = new Game();
   });
 
-  it("init() test", () => {
+  it("init()", () => {
     game.init();
 
     expect(game.players.length).toBe(4);
@@ -20,26 +23,42 @@ describe("Game", () => {
     expect(game.dealer).toBeNull();
   });
 
-  it("add player test", () => {
-    const playerEast = new Player(Position.East);
-    const playerWest = new Player(Position.West);
-
+  it("setPlayer()", () => {
     game.setPlayer(playerEast);
     game.setPlayer(playerWest);
+
     expect(game.players[Position.East]).toBe(playerEast);
     expect(game.players[Position.West]).toBe(playerWest);
   });
 
-  it("should assign a dealer correctly", () => {
-    const playerEast = new Player(Position.East);
-    const playerWest = new Player(Position.West);
-
-    game.setPlayer(playerEast);
-    game.setPlayer(playerWest);
+  it("start()", () => {
     game.start();
-    expect(game.dealer).not.toBeNull();
-    expect(playerEast.handTiles.length).toBeGreaterThanOrEqual(13);
-    expect(playerWest.handTiles.length).toBeGreaterThanOrEqual(13);
-    expect(game.getDealer().picked).not.toBe(TileCore.voidId);
+    expect(game.state).toBe(GameState.WaitingAction);
+    expect(game.getDealer()).toBe(playerEast);
+    expect(game.getCurrentPlayer()).toBe(game.getDealer());
+
+    current = game.getCurrentPlayer();
+  });
+
+  it("discard(picked)", () => {
+    game.discard(current, current.picked);
+    expect(game.state).toBe(GameState.WaitingPass);
+  });
+
+  it("pass(east)", () => {
+    game.pass(playerEast);
+    expect(game.state).toBe(GameState.WaitingPass);
+  });
+
+  it("pass(west)", () => {
+    game.pass(playerWest);
+    expect(game.state).toBe(GameState.WaitingAction);
+    expect(game.current).toBe(playerWest);
+    current = game.getCurrentPlayer();
+  });
+
+  it("discard(0)", () => {
+    game.discard(current, current.handTiles[0]);
+    expect(game.state).toBe(GameState.WaitingPass);
   });
 });
