@@ -378,8 +378,8 @@ export class Game {
       this.dealer.picked = this.dealer.handTiles.pop() as TileId;
     }
 
-    this.setState(GameState.WaitingAction);
     this.setCurrentPlayer(this.dealer);
+    this.setState(GameState.WaitingAction);
 
     return this;
   }
