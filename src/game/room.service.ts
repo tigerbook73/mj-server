@@ -167,11 +167,6 @@ export class RoomService {
       throw new Error(`Room ${room.name} is not open.`);
     }
 
-    // room must have 4 players
-    if (room.players.length !== 4) {
-      throw new Error(`Room ${room.name} must have 4 players.`);
-    }
-
     const positions = room.players
       .filter((player) => player.type === UserType.Human)
       .map((player) => player.position);
@@ -185,17 +180,17 @@ export class RoomService {
     return room;
   }
 
-  quitGame(room: RoomModel): void {
+  quitGame(room: RoomModel): RoomModel {
     // room must be started
     if (room.state !== RoomStatus.Started) {
       throw new Error(`Room ${room.name} is not started.`);
     }
 
-    // stop game
-    this.gameService.stopGame(room.game);
+    // quit game
+    room.game = null;
+    room.state = RoomStatus.Open;
 
-    // reset room
-    this.resetRoom(room);
+    return room;
   }
 
   dropUser(user: UserModel): void {

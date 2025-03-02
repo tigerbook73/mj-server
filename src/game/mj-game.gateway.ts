@@ -335,4 +335,26 @@ export class MjGameGateway
       data: room,
     };
   }
+
+  handleEnterGameRequest(
+    request: EnterGameRequest,
+    client: ClientModel,
+  ): EnterGameResponse {
+    const room = this.roomService.find(request.data.roomName);
+    if (!room) {
+      throw new Error(`Room ${request.data.roomName} not found.`);
+    }
+
+    const user = this.clientService.findById(client.id)?.user;
+    if (!user) {
+      throw new Error(`User not logged in.`);
+    }
+
+    this.roomService.enterGame(room);
+    return {
+      type: request.type,
+      status: "success",
+      data: room,
+    };
+  }
 }
