@@ -443,6 +443,12 @@ export class Game {
       throw new Error("Pass can only be done in WaitingPass state");
     }
 
+    if (this.current === player) {
+      // throw new Error("current player cannot pass");
+      // ignore
+      return this;
+    }
+
     // ignore if the player has already passed
     if (this.passedPlayers.includes(player)) {
       return this;
@@ -452,7 +458,7 @@ export class Game {
 
     if (
       this.passedPlayers.length ===
-      this.players.filter((player) => player).length
+      this.players.filter((player) => player).length - 1
     ) {
       this.setCurrentPlayer(this.getNextPlayer());
       this.pick(this.current as Player);
