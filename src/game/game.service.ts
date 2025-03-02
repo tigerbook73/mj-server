@@ -20,7 +20,7 @@ export class GameService {
   }
 
   actionDropTile(game: Game, player: Player, tileId: TileId): Game {
-    game.discard(player, tileId);
+    game.discard(tileId);
     return game;
   }
 
