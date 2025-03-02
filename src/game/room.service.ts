@@ -7,13 +7,9 @@ import {
 import { UserModel } from "src/common/models/user.model";
 import { UserService } from "./user.service";
 import { PlayerModel } from "src/common/models/player.model";
-import {
-  PlayerRole,
-  PlayerPosition,
-  UserType,
-} from "src/common/models/common.types";
-import { MjGameModel } from "src/common/models/mj.game.model";
+import { PlayerRole, UserType } from "src/common/models/common.types";
 import { MjGameService } from "./mj-game.service";
+import { Game, Player, Position } from "src/common/core/mj.game";
 
 @Injectable()
 export class RoomService {
@@ -32,24 +28,24 @@ export class RoomService {
     room.state = RoomStatus.Open;
     room.players = [
       new PlayerModel(
-        this.userService.findBot(PlayerPosition.East),
+        this.userService.findBot(Position.East),
         room,
-        PlayerPosition.East,
+        Position.East,
       ),
       new PlayerModel(
-        this.userService.findBot(PlayerPosition.South),
+        this.userService.findBot(Position.South),
         room,
-        PlayerPosition.South,
+        Position.South,
       ),
       new PlayerModel(
-        this.userService.findBot(PlayerPosition.West),
+        this.userService.findBot(Position.West),
         room,
-        PlayerPosition.West,
+        Position.West,
       ),
       new PlayerModel(
-        this.userService.findBot(PlayerPosition.North),
+        this.userService.findBot(Position.North),
         room,
-        PlayerPosition.North,
+        Position.North,
       ),
     ];
     room.game = null;
@@ -95,7 +91,7 @@ export class RoomService {
   joinRoom(
     user: UserModel,
     room: RoomModel,
-    position: PlayerPosition,
+    position: Position,
     role = PlayerRole.Player,
   ): PlayerModel {
     // room must be open
@@ -165,7 +161,7 @@ export class RoomService {
     // ...
   }
 
-  startGame(room: RoomModel): MjGameModel {
+  enterGame(room: RoomModel): RoomModel {
     // room must be open
     if (room.state !== RoomStatus.Open) {
       throw new Error(`Room ${room.name} is not open.`);
@@ -176,16 +172,20 @@ export class RoomService {
       throw new Error(`Room ${room.name} must have 4 players.`);
     }
 
-    // start game
-    room.game = this.gameService.startGame(room);
+    const positions = room.players
+      .filter((player) => player.type === UserType.Human)
+      .map((player) => player.position);
+
+    // create game
+    room.game = new Game();
+    room.game.init(positions);
 
     // change room status
     room.state = RoomStatus.Started;
-
-    return room.game;
+    return room;
   }
 
-  stopGame(room: RoomModel): void {
+  quitGame(room: RoomModel): void {
     // room must be started
     if (room.state !== RoomStatus.Started) {
       throw new Error(`Room ${room.name} is not started.`);
@@ -212,7 +212,7 @@ export class RoomService {
       }
 
       if (room.state === RoomStatus.Started) {
-        this.stopGame(room);
+        this.quitGame(room);
       }
     });
   }

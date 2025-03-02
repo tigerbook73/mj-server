@@ -12,7 +12,7 @@ describe("Game Play", () => {
   });
 
   it("init()", () => {
-    game.init();
+    game.init([Position.East, Position.West]);
 
     expect(game.players.length).toBe(4);
     expect(game.walls.length).toBe(4);
@@ -21,11 +21,6 @@ describe("Game Play", () => {
     expect(game.latestTile).toBe(TileCore.voidId);
     expect(game.current).toBeNull();
     expect(game.dealer).toBeNull();
-  });
-
-  it("setPlayer()", () => {
-    game.setPlayer(playerEast);
-    game.setPlayer(playerWest);
 
     expect(game.players[Position.East]).toBe(playerEast);
     expect(game.players[Position.West]).toBe(playerWest);

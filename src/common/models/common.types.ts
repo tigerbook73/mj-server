@@ -1,10 +1,3 @@
-export enum PlayerPosition {
-  East = "east",
-  West = "west",
-  North = "north",
-  South = "south",
-}
-
 export enum PlayerRole {
   Player = "player",
   Observer = "observer",

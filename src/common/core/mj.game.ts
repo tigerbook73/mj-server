@@ -103,7 +103,7 @@ export class Game {
     //
   }
 
-  init() {
+  init(positions: Position[]) {
     // 0: 东，1: 南，2: 西，3: 北
     this.players = []; // 没有玩家的位置是undefined
     this.players.length = 4;
@@ -147,6 +147,11 @@ export class Game {
 
     // game state
     this.setState(GameState.Init);
+
+    // add players
+    for (let i = 0; i < positions.length; i++) {
+      this.setPlayer(new Player(positions[i]));
+    }
   }
 
   start() {

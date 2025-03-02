@@ -1,6 +1,6 @@
+import { Game, Position } from "../core/mj.game";
+import { TileId } from "../core/mj.tile-core";
 import { ClientModel } from "../models/client.model";
-import { PlayerPosition } from "../models/common.types";
-import { MjGameModel } from "../models/mj.game.model";
 import { RoomCreateDto, RoomModel } from "../models/room.model";
 import { UserModel } from "../models/user.model";
 import { GameSocket } from "./game-socket";
@@ -23,19 +23,19 @@ export enum GameRequestType {
   LIST_ROOM = "listRoom",
   JOIN_ROOM = "joinRoom",
   LEAVE_ROOM = "leaveRoom",
+  ENTER_GAME = "enterGame",
+  QUIT_GAME = "quitGame",
 
-  // games
+  // MJGame
   START_GAME = "startGame",
   RESET_GAME = "resetGame",
 
-  // MJ game
-  PICK_TILE = "pickTile",
-  DISCARD_TILE = "discardTile",
-  PASS_TILE = "passTile",
-  CHI_TILE = "chiTile",
-  PONG_TILE = "pongTile",
-  KONG_TILE = "kongTile",
-  WIN_GAME = "winGame",
+  // Game Action
+  DROP_TILE = "actionDropTile",
+  PASS = "actionPass",
+  CHI = "actionChi",
+  PONG = "actionPong",
+  HU = "actionHu",
 }
 
 export interface GameRequest {
@@ -134,7 +134,7 @@ export interface JoinRoomRequest extends GameRequest {
   type: GameRequestType.JOIN_ROOM;
   data: {
     roomName: string;
-    position: PlayerPosition;
+    position: Position;
   };
 }
 
@@ -163,7 +163,7 @@ export interface StartGameRequest extends GameRequest {
 
 export interface StartGameResponse extends GameResponse {
   type: GameRequestType.START_GAME;
-  data: MjGameModel;
+  data: Game;
 }
 
 export interface resetGameRequest extends GameRequest {
@@ -172,16 +172,19 @@ export interface resetGameRequest extends GameRequest {
 
 export interface resetGameResponse extends GameResponse {
   type: GameRequestType.RESET_GAME;
-  data: MjGameModel;
+  data: Game;
 }
 
-export interface PickTileRequest extends GameRequest {
-  type: GameRequestType.PICK_TILE;
+export interface GameActionRequest extends GameRequest {
+  type: GameRequestType.DROP_TILE;
+  data: {
+    tile: TileId;
+  };
 }
 
-export interface PickTileResponse extends GameResponse {
-  type: GameRequestType.PICK_TILE;
-  data: MjGameModel;
+export interface GameActionResponse extends GameResponse {
+  type: GameRequestType.DROP_TILE;
+  data: Game;
 }
 
 export enum GameEventType {
@@ -377,10 +380,7 @@ export class ClientApi {
     return response.data;
   }
 
-  async joinRoom(
-    roomName: string,
-    position: PlayerPosition,
-  ): Promise<RoomModel> {
+  async joinRoom(roomName: string, position: Position): Promise<RoomModel> {
     const request: JoinRoomRequest = {
       type: GameRequestType.JOIN_ROOM,
       data: {
@@ -405,7 +405,7 @@ export class ClientApi {
   /**
    * game APIs
    */
-  async startGame(roomName: string): Promise<MjGameModel> {
+  async startGame(roomName: string): Promise<Game> {
     const request: StartGameRequest = {
       type: GameRequestType.START_GAME,
       data: {

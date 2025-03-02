@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { PlayerPosition, UserType } from "src/common/models/common.types";
+import { Position } from "src/common/core/mj.game";
+import { UserType } from "src/common/models/common.types";
 import { UserCreateDto, UserModel } from "src/common/models/user.model";
 
 @Injectable()
@@ -9,10 +10,10 @@ export class UserService {
   constructor() {
     // create default BOT users
     this.users = [
-      this.createBot(PlayerPosition.East),
-      this.createBot(PlayerPosition.South),
-      this.createBot(PlayerPosition.West),
-      this.createBot(PlayerPosition.North),
+      this.createBot(Position.East),
+      this.createBot(Position.South),
+      this.createBot(Position.West),
+      this.createBot(Position.North),
     ];
   }
 
@@ -29,7 +30,7 @@ export class UserService {
     return user;
   }
 
-  createBot(position: PlayerPosition): UserModel {
+  createBot(position: Position): UserModel {
     if (this.findBot(position)) {
       throw new Error(`Bot with position ${position} already exists.`);
     }
@@ -38,7 +39,7 @@ export class UserService {
       {
         name: `bot-${position}`,
         firstName: "bot",
-        lastName: position,
+        lastName: Position[position],
         email: `${position}@mj-game.com`,
       },
       "",
@@ -60,10 +61,11 @@ export class UserService {
     return this.users;
   }
 
-  findBot(position: PlayerPosition): UserModel {
+  findBot(position: Position): UserModel {
     return (
       this.users.find(
-        (user) => user.type === UserType.Bot && user.lastName === position,
+        (user) =>
+          user.type === UserType.Bot && user.lastName === Position[position],
       ) ?? null
     );
   }

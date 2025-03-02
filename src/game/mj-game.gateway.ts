@@ -64,43 +64,6 @@ export class MjGameGateway
   @WebSocketServer()
   private readonly server: Server;
 
-  /**
-   *
-   */
-  /*
-  export enum GameRequestType {
-    // Authentication
-    SIGN_IN = "signIn",
-
-    // clients
-    LIST_CLIENT = "listClient",
-
-    // users
-    LIST_USER = "listUser",
-    DELETE_USER = "deleteUser",
-
-    // rooms
-    CREATE_ROOM = "createRoom",
-    DELETE_ROOM = "deleteRoom",
-    LIST_ROOM = "listRoom",
-    JOIN_ROOM = "joinRoom",
-    LEAVE_ROOM = "leaveRoom",
-
-    // games
-    START_GAME = "startGame",
-    RESET_GAME = "resetGame",
-
-    // MJ game
-    PICK_TILE = "pickTile",
-    DISCARD_TILE = "discardTile",
-    PASS_TILE = "passTile",
-    CHI_TILE = "chiTile",
-    PONG_TILE = "pongTile",
-    KONG_TILE = "kongTile",
-    WIN_GAME = "winGame",
-  }
-  */
-
   private messageHandlers: Map<string, RequestHandler>;
 
   constructor(
@@ -158,6 +121,16 @@ export class MjGameGateway
       [
         GameRequestType.LEAVE_ROOM,
         { update: true, handler: this.handleLeaveRoomRequest },
+      ],
+
+      // games
+      [
+        GameRequestType.START_GAME,
+        { update: true, handler: this.handleStartGameRequest },
+      ],
+      [
+        GameRequestType.RESET_GAME,
+        { update: true, handler: this.handleResetGameRequest },
       ],
     ]);
   }
