@@ -3,8 +3,6 @@ import { TileCore } from "./mj.tile-core";
 
 describe("Game Play", () => {
   let game: Game;
-  const playerEast = new Player(Position.East);
-  const playerWest = new Player(Position.West);
   let current: Player;
 
   beforeAll(() => {
@@ -22,38 +20,31 @@ describe("Game Play", () => {
     expect(game.current).toBeNull();
     expect(game.dealer).toBeNull();
 
-    expect(game.players[Position.East]).toBe(playerEast);
-    expect(game.players[Position.West]).toBe(playerWest);
+    expect(game.players[Position.East]).toBeDefined();
+    expect(game.players[Position.West]).toBeDefined();
   });
 
   it("start()", () => {
     game.start();
     expect(game.state).toBe(GameState.WaitingAction);
-    expect(game.dealer).toBe(playerEast);
+    expect(game.dealer).toBe(game.players[Position.East]);
     expect(game.current).toBe(game.dealer);
-
-    current = game.current;
   });
 
   it("discard(picked)", () => {
-    game.discard(current, current.picked);
+    game.discard(current.picked);
     expect(game.state).toBe(GameState.WaitingPass);
   });
 
-  it("pass(east)", () => {
-    game.pass(playerEast);
-    expect(game.state).toBe(GameState.WaitingPass);
-  });
-
-  it("pass(west)", () => {
-    game.pass(playerWest);
+  it("pass(all)", () => {
+    const nextPlayer = game.getNextPlayer();
+    game.pass(nextPlayer);
     expect(game.state).toBe(GameState.WaitingAction);
-    expect(game.current).toBe(playerWest);
-    current = game.current;
+    expect(game.current).toBe(nextPlayer);
   });
 
   it("discard(0)", () => {
-    game.discard(current, current.handTiles[0]);
+    game.discard(current.handTiles[0]);
     expect(game.state).toBe(GameState.WaitingPass);
   });
 });

@@ -7,6 +7,7 @@ export enum ActionType {
   Peng = "peng",
   Chi = "chi",
   Gang = "gang",
+  AnGang = "angang",
   Hu = "hu",
 }
 
@@ -51,7 +52,7 @@ export enum GameState {
   Init = "init", // 初始
   Dispatching = "dispatching", // 发牌中，后续可以拆分成更小的状态
   WaitingAction = "wating_action", // 等待玩家操作: 胡/暗杠/打牌
-  WaitingPass = "waiting-pass", // 等待玩家按顺序操作: 过/碰/杠/吃/胡
+  WaitingPass = "waiting-pass", // 等待玩家按顺序操作: 过/碰/杠/吃/胡, 在这个状态下，下一个玩家还没有确定，current还是打出牌的玩家
   // 顺序：
   // 判断是否有人碰/胡/杠/吃
   // 如果有
@@ -103,7 +104,10 @@ export class Game {
     //
   }
 
-  init(positions: Position[]) {
+  /**
+   * 初始化，进入发牌前状态
+   */
+  public init(positions: Position[]) {
     // 0: 东，1: 南，2: 西，3: 北
     this.players = []; // 没有玩家的位置是undefined
     this.players.length = 4;
@@ -154,17 +158,112 @@ export class Game {
     }
   }
 
-  start() {
+  /**
+   * 开始游戏，指定庄家、发牌，进入 WaitingAction 状态
+   */
+  public start() {
     this.assignDealer();
     this.dice();
     this.dispatch();
   }
 
-  setState(state: GameState) {
-    this.state = state;
+  /**
+   * 打牌，打完牌后进入 WaitingPass 状态
+   */
+  public discard(tile: TileId): this {
+    if (![GameState.WaitingAction].includes(this.state)) {
+      throw new Error("Discard can only be done in WaitingAction state");
+    }
 
-    // reset state specific variables
-    this.passedPlayers = [];
+    const index = this.current.handTiles.indexOf(tile);
+    if (index === -1 && this.current.picked !== tile) {
+      throw new Error("tile is not in your hand");
+    }
+
+    if (index !== -1) {
+      this.current.handTiles.splice(index, 1);
+      this.current.handTiles.push(this.current.picked);
+      this.current.handTiles.sort((a, b) => a - b);
+      this.current.picked = TileCore.voidId;
+    } else {
+      this.current.picked = TileCore.voidId;
+    }
+
+    this.discards[this.current.position].tiles.push(tile);
+
+    this.setLatestTile(tile);
+    this.setState(GameState.WaitingPass);
+
+    return this;
+  }
+
+  /**
+   * 暗杠, 暗杠后仍然是WaitingAction状态
+   */
+  angang(tileIds: [TileId, TileId, TileId, TileId]) {
+    if (![GameState.WaitingAction].includes(this.state)) {
+      throw new Error("Gang can only be done in WaitingAction state");
+    }
+
+    // check if the tiles are the same
+    if (!TileCore.isSame(tileIds[0], tileIds[1], tileIds[2], tileIds[3])) {
+      throw new Error("tiles are not the same");
+    }
+
+    // check if the tiles are in the hand
+    if (!this.isTileInHand(this.current, tileIds)) {
+      throw new Error("tiles are not in your hand");
+    }
+
+    // remove the tiles from the hand
+    this.removeTilesFromHand(this.current, tileIds);
+
+    // add to opened sets
+    this.current.openedSets.push(
+      new OpenedSet(
+        [tileIds[0], tileIds[1], tileIds[2], tileIds[3]],
+        TileCore.voidId,
+        ActionType.AnGang,
+        this.current.position,
+      ),
+    );
+
+    this.setLatestTile(TileCore.voidId);
+    this.setState(GameState.WaitingPass);
+
+    this.pickReverse();
+    this.setState(GameState.WaitingAction);
+  }
+
+  setState(state: GameState): this {
+    this.state = state;
+    return this;
+  }
+
+  isTileInHand(player: Player, tiles: TileId | TileId[]): boolean {
+    if (!Array.isArray(tiles)) {
+      tiles = [tiles];
+    }
+
+    for (let i = 0; i < tiles.length; i++) {
+      if (player.handTiles.indexOf(tiles[i]) === -1) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  removeTilesFromHand(player: Player, tiles: TileId | TileId[]) {
+    if (!Array.isArray(tiles)) {
+      tiles = [tiles];
+    }
+
+    for (const tile of tiles) {
+      const index = player.handTiles.indexOf(tile);
+      if (index !== -1) {
+        player.handTiles.splice(index, 1);
+      }
+    }
   }
 
   /**
@@ -201,12 +300,13 @@ export class Game {
    *
    * Note: this method does not change the current player
    */
-  getNextPlayer(): Player {
-    if (!this.current) {
+  getNextPlayer(current: Player | null = null): Player {
+    current = current || this.current;
+    if (!current) {
       throw new Error("current player is not set");
     }
 
-    let pos = this.current.position as Position;
+    let pos = current.position as Position;
     const direction = 1;
     while (!this.players[(pos + direction) % 4]) {
       pos += direction;
@@ -284,8 +384,8 @@ export class Game {
     return this;
   }
 
-  pickTile(from: "start" | "end" = "start"): TileId {
-    if (from === "start") {
+  pickTile(bReverse: boolean = false): TileId {
+    if (!bReverse) {
       const wall = this.walls[this.pickPosition];
       const taken = wall.tiles[this.pickIndex];
       wall.tiles[this.pickIndex] = TileCore.voidId;
@@ -385,7 +485,7 @@ export class Game {
     return this;
   }
 
-  pick(player: Player): this {
+  pick(): this {
     if (
       ![GameState.WaitingPass].includes(this.state) ||
       this.passedPlayers.length !==
@@ -394,47 +494,25 @@ export class Game {
       throw new Error("Pick can only be done when all players have passed");
     }
 
-    if (this.current !== player) {
-      throw new Error("not your turn");
-    }
-
-    if (player.picked !== TileCore.voidId) {
+    if (this.current.picked !== TileCore.voidId) {
       throw new Error("you have already picked a tile");
     }
 
-    player.picked = this.pickTile();
+    this.current.picked = this.pickTile();
 
     return this;
   }
 
-  discard(player: Player, tile: TileId): this {
-    if (![GameState.WaitingAction].includes(this.state)) {
-      throw new Error("Discard can only be done in WaitingAction state");
+  pickReverse() {
+    if (![GameState.WaitingPass].includes(this.state)) {
+      throw new Error("Pick can only be done when all players have passed");
     }
 
-    if (this.current !== player) {
-      throw new Error("player can only discard when it is his turn");
+    if (this.current.picked !== TileCore.voidId) {
+      throw new Error("you have already picked a tile");
     }
 
-    const index = player.handTiles.indexOf(tile);
-    if (index === -1 && player.picked !== tile) {
-      throw new Error("tile is not in your hand");
-    }
-
-    if (index !== -1) {
-      player.handTiles.splice(index, 1);
-      player.handTiles.push(player.picked);
-      player.handTiles.sort((a, b) => a - b);
-      player.picked = TileCore.voidId;
-    } else {
-      player.picked = TileCore.voidId;
-    }
-
-    this.discards[player.position].tiles.push(tile);
-
-    this.setLatestTile(tile);
-    this.setState(GameState.WaitingPass);
-
+    this.current.picked = this.pickTile(true);
     return this;
   }
 
@@ -461,7 +539,7 @@ export class Game {
       this.players.filter((player) => player).length - 1
     ) {
       this.setCurrentPlayer(this.getNextPlayer());
-      this.pick(this.current as Player);
+      this.pick();
       this.setLatestTile(TileCore.voidId);
       this.setState(GameState.WaitingAction);
     }
