@@ -31,12 +31,12 @@ import {
   ListRoomResponse,
   ListUserRequest,
   ListUserResponse,
+  QuitGameRequest,
+  QuitGameResponse,
   SignInRequest,
   SignInResponse,
   SignOutRequest,
   SignOutResponse,
-  StartGameRequest,
-  StartGameResponse,
 } from "src/common/protocols/apis.models";
 import { ClientService } from "./client.service";
 import { UserService } from "./user.service";
@@ -44,7 +44,6 @@ import { RoomService } from "./room.service";
 import { GameService } from "./game.service";
 import { AuthService } from "./auth.service";
 import { ClientModel } from "src/common/models/client.model";
-import { RoomStatus } from "src/common/models/room.model";
 
 type RequestHandler = {
   update: boolean;
@@ -352,6 +351,30 @@ export class MjGameGateway
     }
 
     this.roomService.enterGame(room);
+    return {
+      type: request.type,
+      status: "success",
+      data: room,
+    };
+  }
+
+  handleQuitGameRequest(
+    request: QuitGameRequest,
+    client: ClientModel,
+  ): QuitGameResponse {
+    const room = this.roomService.find(request.data.roomName);
+    if (!room) {
+      throw new Error(`Room ${request.data.roomName} not found.`);
+    }
+
+    const user = room.players.find(
+      (player) => player.userName === client.user?.name,
+    );
+    if (!user) {
+      throw new Error("User not in room cannot quit game.");
+    }
+
+    this.roomService.quitGame(room);
     return {
       type: request.type,
       status: "success",
