@@ -8,8 +8,8 @@ import { UserModel } from "src/common/models/user.model";
 import { UserService } from "./user.service";
 import { PlayerModel } from "src/common/models/player.model";
 import { PlayerRole, UserType } from "src/common/models/common.types";
-import { MjGameService } from "./mj-game.service";
-import { Game, Player, Position } from "src/common/core/mj.game";
+import { GameService } from "./game.service";
+import { Game, Position } from "src/common/core/mj.game";
 
 @Injectable()
 export class RoomService {
@@ -17,7 +17,7 @@ export class RoomService {
 
   constructor(
     private userService: UserService,
-    private gameService: MjGameService,
+    private gameService: GameService,
   ) {
     // default room
     this.create({ name: "room-1" });

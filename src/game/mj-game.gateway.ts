@@ -39,7 +39,7 @@ import {
 import { ClientService } from "./client.service";
 import { UserService } from "./user.service";
 import { RoomService } from "./room.service";
-import { MjGameService } from "./mj-game.service";
+import { GameService } from "./game.service";
 import { AuthService } from "./auth.service";
 import { ClientModel } from "src/common/models/client.model";
 import { RoomStatus } from "src/common/models/room.model";
@@ -71,7 +71,7 @@ export class MjGameGateway
     public authService: AuthService,
     public userService: UserService,
     public roomService: RoomService,
-    public gameService: MjGameService,
+    public gameService: GameService,
   ) {
     //
     this.messageHandlers = new Map<string, RequestHandler>([

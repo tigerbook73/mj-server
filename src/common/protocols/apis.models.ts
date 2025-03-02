@@ -31,11 +31,12 @@ export enum GameRequestType {
   RESET_GAME = "resetGame",
 
   // Game Action
-  DROP_TILE = "actionDropTile",
-  PASS = "actionPass",
-  CHI = "actionChi",
-  PONG = "actionPong",
-  HU = "actionHu",
+  ACTION_DROP_TILE = "actionDropTile",
+  ACTION_PASS = "actionPass",
+  ACTION_CHI = "actionChi",
+  ACTION_PONG = "actionPong",
+  ACTION_GANG = "actionGang",
+  ACTION_HU = "actionHu",
 }
 
 export interface GameRequest {
@@ -152,13 +153,35 @@ export interface LeaveRoomRequest extends GameRequest {
 
 export interface LeaveRoomResponse extends GameResponse {
   type: GameRequestType.LEAVE_ROOM;
+  data: RoomModel;
+}
+
+export interface EnterGameRequest extends GameRequest {
+  type: GameRequestType.ENTER_GAME;
+  data: {
+    roomName: string;
+  };
+}
+
+export interface EnterGameResponse extends GameResponse {
+  type: GameRequestType.ENTER_GAME;
+  data: RoomModel;
+}
+
+export interface QuitGameRequest extends GameRequest {
+  type: GameRequestType.QUIT_GAME;
+  data: {
+    roomName: string;
+  };
+}
+
+export interface QuitGameResponse extends GameResponse {
+  type: GameRequestType.QUIT_GAME;
+  data: RoomModel;
 }
 
 export interface StartGameRequest extends GameRequest {
   type: GameRequestType.START_GAME;
-  data: {
-    roomName: string;
-  };
 }
 
 export interface StartGameResponse extends GameResponse {
@@ -166,24 +189,78 @@ export interface StartGameResponse extends GameResponse {
   data: Game;
 }
 
-export interface resetGameRequest extends GameRequest {
+export interface ResetGameRequest extends GameRequest {
   type: GameRequestType.RESET_GAME;
 }
 
-export interface resetGameResponse extends GameResponse {
+export interface ResetGameResponse extends GameResponse {
   type: GameRequestType.RESET_GAME;
   data: Game;
 }
 
-export interface GameActionRequest extends GameRequest {
-  type: GameRequestType.DROP_TILE;
+export interface ActionDropTileRequest extends GameRequest {
+  type: GameRequestType.ACTION_DROP_TILE;
   data: {
-    tile: TileId;
+    tileId: TileId;
   };
 }
 
-export interface GameActionResponse extends GameResponse {
-  type: GameRequestType.DROP_TILE;
+export interface ActionDropTileResponse extends GameResponse {
+  type: GameRequestType.ACTION_DROP_TILE;
+  data: Game;
+}
+
+export interface ActionPassRequest extends GameRequest {
+  type: GameRequestType.ACTION_PASS;
+}
+
+export interface ActionPassResponse extends GameResponse {
+  type: GameRequestType.ACTION_PASS;
+  data: Game;
+}
+
+export interface ActionChiRequest extends GameRequest {
+  type: GameRequestType.ACTION_CHI;
+  data: {
+    tileIds: [TileId, TileId];
+  };
+}
+
+export interface ActionChiResponse extends GameResponse {
+  type: GameRequestType.ACTION_CHI;
+  data: Game;
+}
+
+export interface ActionPongRequest extends GameRequest {
+  type: GameRequestType.ACTION_PONG;
+  data: {
+    tileIds: [TileId, TileId];
+  };
+}
+
+export interface ActionPongResponse extends GameResponse {
+  type: GameRequestType.ACTION_PONG;
+  data: Game;
+}
+
+export interface ActionGangRequest extends GameRequest {
+  type: GameRequestType.ACTION_GANG;
+  data: {
+    tileIds: [TileId, TileId, TileId];
+  };
+}
+
+export interface ActionGangResponse extends GameResponse {
+  type: GameRequestType.ACTION_GANG;
+  data: Game;
+}
+
+export interface ActionHuRequest extends GameRequest {
+  type: GameRequestType.ACTION_HU;
+}
+
+export interface ActionHuResponse extends GameResponse {
+  type: GameRequestType.ACTION_HU;
   data: Game;
 }
 
@@ -275,6 +352,18 @@ export class ClientApi {
     return this.gameSocket.sendAndWait<LeaveRoomResponse>(request);
   }
 
+  protected async sendEnterGameRequest(
+    request: EnterGameRequest,
+  ): Promise<EnterGameResponse> {
+    return this.gameSocket.sendAndWait<EnterGameResponse>(request);
+  }
+
+  protected async sendQuitGameRequest(
+    request: QuitGameRequest,
+  ): Promise<QuitGameResponse> {
+    return this.gameSocket.sendAndWait<QuitGameResponse>(request);
+  }
+
   /**
    * game APIs
    */
@@ -285,9 +374,45 @@ export class ClientApi {
   }
 
   protected async sendResetGameRequest(
-    request: resetGameRequest,
-  ): Promise<resetGameResponse> {
-    return this.gameSocket.sendAndWait<resetGameResponse>(request);
+    request: ResetGameRequest,
+  ): Promise<ResetGameResponse> {
+    return this.gameSocket.sendAndWait<ResetGameResponse>(request);
+  }
+
+  protected async sendActionDropTileRequest(
+    request: ActionDropTileRequest,
+  ): Promise<ActionDropTileResponse> {
+    return this.gameSocket.sendAndWait<ActionDropTileResponse>(request);
+  }
+
+  protected async sendActionPassRequest(
+    request: ActionPassRequest,
+  ): Promise<ActionPassResponse> {
+    return this.gameSocket.sendAndWait<ActionPassResponse>(request);
+  }
+
+  protected async sendActionChiRequest(
+    request: ActionChiRequest,
+  ): Promise<ActionChiResponse> {
+    return this.gameSocket.sendAndWait<ActionChiResponse>(request);
+  }
+
+  protected async sendActionPongRequest(
+    request: ActionPongRequest,
+  ): Promise<ActionPongResponse> {
+    return this.gameSocket.sendAndWait<ActionPongResponse>(request);
+  }
+
+  protected async sendActionGangRequest(
+    request: ActionGangRequest,
+  ): Promise<ActionGangResponse> {
+    return this.gameSocket.sendAndWait<ActionGangResponse>(request);
+  }
+
+  protected async sendActionHuRequest(
+    request: ActionHuRequest,
+  ): Promise<ActionHuResponse> {
+    return this.gameSocket.sendAndWait<ActionHuResponse>(request);
   }
 
   /**
@@ -402,17 +527,104 @@ export class ClientApi {
     await this.sendLeaveRoomRequest(request);
   }
 
-  /**
-   * game APIs
-   */
-  async startGame(roomName: string): Promise<Game> {
-    const request: StartGameRequest = {
-      type: GameRequestType.START_GAME,
+  async enterGame(roomName: string): Promise<RoomModel> {
+    const request: EnterGameRequest = {
+      type: GameRequestType.ENTER_GAME,
       data: {
         roomName,
       },
     };
+    const response = await this.sendEnterGameRequest(request);
+    return response.data;
+  }
+
+  async quitGame(roomName: string): Promise<RoomModel> {
+    const request: QuitGameRequest = {
+      type: GameRequestType.QUIT_GAME,
+      data: {
+        roomName,
+      },
+    };
+    const response = await this.sendQuitGameRequest(request);
+    return response.data;
+  }
+
+  /**
+   * game APIs
+   */
+  async startGame(): Promise<Game> {
+    const request: StartGameRequest = {
+      type: GameRequestType.START_GAME,
+    };
     const response = await this.sendStartGameRequest(request);
+    return response.data;
+  }
+
+  async resetGame(): Promise<Game> {
+    const request: ResetGameRequest = {
+      type: GameRequestType.RESET_GAME,
+    };
+    const response = await this.sendResetGameRequest(request);
+    return response.data;
+  }
+
+  async actionDropTile(tileId: TileId): Promise<Game> {
+    const request: ActionDropTileRequest = {
+      type: GameRequestType.ACTION_DROP_TILE,
+      data: {
+        tileId,
+      },
+    };
+    const response = await this.sendActionDropTileRequest(request);
+    return response.data;
+  }
+
+  async actionPass(): Promise<Game> {
+    const request: ActionPassRequest = {
+      type: GameRequestType.ACTION_PASS,
+    };
+    const response = await this.sendActionPassRequest(request);
+    return response.data;
+  }
+
+  async actionChi(tileIds: [TileId, TileId]): Promise<Game> {
+    const request: ActionChiRequest = {
+      type: GameRequestType.ACTION_CHI,
+      data: {
+        tileIds,
+      },
+    };
+    const response = await this.sendActionChiRequest(request);
+    return response.data;
+  }
+
+  async actionPong(tileIds: [TileId, TileId]): Promise<Game> {
+    const request: ActionPongRequest = {
+      type: GameRequestType.ACTION_PONG,
+      data: {
+        tileIds,
+      },
+    };
+    const response = await this.sendActionPongRequest(request);
+    return response.data;
+  }
+
+  async actionGang(tileIds: [TileId, TileId, TileId]): Promise<Game> {
+    const request: ActionGangRequest = {
+      type: GameRequestType.ACTION_GANG,
+      data: {
+        tileIds,
+      },
+    };
+    const response = await this.sendActionGangRequest(request);
+    return response.data;
+  }
+
+  async actionHu(): Promise<Game> {
+    const request: ActionHuRequest = {
+      type: GameRequestType.ACTION_HU,
+    };
+    const response = await this.sendActionHuRequest(request);
     return response.data;
   }
 }
