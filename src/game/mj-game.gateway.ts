@@ -162,6 +162,7 @@ export class MjGameGateway
     this.clientService.delete(clientModel);
 
     if (!clientModel.user) {
+      this.authService.signOut(clientModel);
       return;
     }
 
