@@ -3,7 +3,6 @@ import { TileCore } from "./mj.tile-core";
 
 describe("Game Play", () => {
   let game: Game;
-  let current: Player;
 
   beforeAll(() => {
     game = new Game();
@@ -32,7 +31,7 @@ describe("Game Play", () => {
   });
 
   it("discard(picked)", () => {
-    game.discard(current.picked);
+    game.discard(game.current.picked);
     expect(game.state).toBe(GameState.WaitingPass);
   });
 
@@ -44,7 +43,7 @@ describe("Game Play", () => {
   });
 
   it("discard(0)", () => {
-    game.discard(current.handTiles[0]);
+    game.discard(game.current.handTiles[0]);
     expect(game.state).toBe(GameState.WaitingPass);
   });
 });

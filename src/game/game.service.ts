@@ -8,47 +8,95 @@ export class GameService {
     //
   }
 
-  startGame(game: Game): Game {
+  startGame(player: Player, game: Game): Game {
+    // player is in current game
+    if (!game.players.includes(player)) {
+      throw new Error("Player is not in current game");
+    }
+
     game.start();
     return game;
   }
 
-  resetGame(game: Game): Game {
+  resetGame(player: Player, game: Game): Game {
+    // player is in current game
+    if (!game.players.includes(player)) {
+      throw new Error("Player is not in current game");
+    }
     const positions = game.players.map((player) => player.position);
     game.init(positions);
     return game;
   }
 
-  actionDropTile(game: Game, player: Player, tileId: TileId): Game {
+  actionDiscard(player: Player, game: Game, tileId: TileId): Game {
+    // player is the current player
+    if (game.current !== player) {
+      throw new Error("Player is not the current player");
+    }
+
     game.discard(tileId);
     return game;
   }
 
-  actionPass(game: Game, player: Player): Game {
+  actionAnGang(
+    game: Game,
+    player: Player,
+    tileIds: [TileId, TileId, TileId, TileId],
+  ): Game {
+    game.angang(tileIds);
+    return game;
+  }
+
+  actionHuzimo(player: Player, game: Game): Game {
+    game.huZhimo();
+    return game;
+  }
+
+  actionPass(player: Player, game: Game): Game {
+    // player is in current game and not the current player
+    if (player == game.current || !game.players.includes(player)) {
+      throw new Error("Player is not in current game or is the current player");
+    }
+
     game.pass(player);
     return game;
   }
 
-  actionChi(game: Game, player: Player, tileIds: [TileId, TileId]): Game {
-    game.chi(player, tileIds);
+  actionChi(player: Player, game: Game, tileIds: [TileId, TileId]): Game {
+    // player is the next player of the current player
+    if (game.getNextPlayer() !== player) {
+      throw new Error("Player is not the next player of the current player");
+    }
+
+    game.chi(tileIds);
     return game;
   }
 
-  actionPeng(game: Game, player: Player, tileIds: [TileId, TileId]): Game {
-    game.peng(player, tileIds);
+  actionPeng(player: Player, game: Game, tileIds: [TileId, TileId]): Game {
+    // player is not the current and in current game
+    if (player === game.current || !game.players.includes(player)) {
+      throw new Error("Player is the current player or not in current game");
+    }
+
+    game.peng(tileIds);
     return game;
   }
 
   actionGong(
-    game: Game,
     player: Player,
+    game: Game,
     tileIds: [TileId, TileId, TileId],
   ): Game {
-    game.gang(player, tileIds);
+    // player is not the current and in current game
+    if (player === game.current || !game.players.includes(player)) {
+      throw new Error("Player is the current player or not in current game");
+    }
+
+    game.gang(tileIds);
     return game;
   }
 
-  actionHu(game: Game, player: Player): Game {
+  actionHu(player: Player, game: Game): Game {
     game.hu(player);
     return game;
   }

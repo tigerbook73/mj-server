@@ -200,7 +200,7 @@ export class Game {
   /**
    * 暗杠, 暗杠后仍然是WaitingAction状态
    */
-  angang(tileIds: [TileId, TileId, TileId, TileId]) {
+  public angang(tileIds: [TileId, TileId, TileId, TileId]) {
     if (![GameState.WaitingAction].includes(this.state)) {
       throw new Error("Gang can only be done in WaitingAction state");
     }
@@ -235,7 +235,29 @@ export class Game {
     this.setState(GameState.WaitingAction);
   }
 
-  pass(player: Player): this {
+  /**
+   * 自摸胡, 自摸胡后进入 End 状态
+   */
+  public huZhimo(): this {
+    if (![GameState.WaitingAction].includes(this.state)) {
+      throw new Error("Hu can only be done in WaitingAction state");
+    }
+
+    const tileIds = this.current.handTiles.slice();
+    tileIds.push(this.current.picked);
+
+    if (!this.canHu(tileIds)) {
+      throw new Error("you cannot hu");
+    }
+
+    this.setState(GameState.End);
+    return this;
+  }
+
+  /**
+   * 过，所有其他玩家都过了以后，下一个玩家变为当前玩家，抓牌，进入 WaitingAction 状态
+   */
+  public pass(player: Player): this {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Pass can only be done in WaitingPass state");
     }
@@ -253,10 +275,7 @@ export class Game {
 
     this.passedPlayers.push(player);
 
-    if (
-      this.passedPlayers.length ===
-      this.players.filter((player) => player).length - 1
-    ) {
+    if (this.allPassed()) {
       this.setCurrentPlayer(this.getNextPlayer());
       this.pick();
       this.setLatestTile(TileCore.voidId);
@@ -266,14 +285,15 @@ export class Game {
     return this;
   }
 
-  chi(player: Player, tileIds: [TileId, TileId]): this {
+  /**
+   * 吃, 吃完后进入 WaitingAction 状态
+   */
+  public chi(tileIds: [TileId, TileId]): this {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Chi can only be done in WaitingPass state");
     }
 
-    if (this.current !== this.getNextPlayer()) {
-      throw new Error("only player next to the current player can chi");
-    }
+    const player = this.getNextPlayer();
 
     // check if the tiles are consecutive
     if (!TileCore.isConsecutive(tileIds[0], tileIds[1], this.latestTile)) {
@@ -281,15 +301,12 @@ export class Game {
     }
 
     // check if the tiles are in the hand
-    const index1 = player.handTiles.indexOf(tileIds[0]);
-    const index2 = player.handTiles.indexOf(tileIds[1]);
-    if (index1 === -1 || index2 === -1) {
+    if (!this.isTileInHand(player, tileIds)) {
       throw new Error("tiles are not in your hand");
     }
 
     // remove the tiles from the hand
-    player.handTiles.splice(index1, 1);
-    player.handTiles.splice(index2, 1);
+    this.removeTilesFromHand(player, tileIds);
 
     // add to opened sets
     player.openedSets.push(
@@ -307,14 +324,15 @@ export class Game {
     return this;
   }
 
-  peng(player: Player, tileIds: [TileId, TileId]) {
+  /**
+   * 碰, 碰完后进入 WaitingAction 状态
+   */
+  public peng(tileIds: [TileId, TileId]) {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Peng can only be done in WaitingPass state");
     }
 
-    if (this.current !== this.getNextPlayer()) {
-      throw new Error("only player next to the current player can peng");
-    }
+    const player = this.getNextPlayer();
 
     // check if the tiles are consecutive
     if (!TileCore.isSame(tileIds[0], tileIds[1], this.latestTile)) {
@@ -322,15 +340,12 @@ export class Game {
     }
 
     // check if the tiles are in the hand
-    const index1 = player.handTiles.indexOf(tileIds[0]);
-    const index2 = player.handTiles.indexOf(tileIds[1]);
-    if (index1 === -1 || index2 === -1) {
+    if (!this.isTileInHand(player, tileIds)) {
       throw new Error("tiles are not in your hand");
     }
 
     // remove the tiles from the hand
-    player.handTiles.splice(index1, 1);
-    player.handTiles.splice(index2, 1);
+    this.removeTilesFromHand(player, tileIds);
 
     // add to opened sets
     player.openedSets.push(
@@ -348,32 +363,28 @@ export class Game {
     return this;
   }
 
-  gang(player: Player, tileIds: [TileId, TileId, TileId]) {
+  /**
+   * 杠, 杠完后进入 WaitingAction 状态
+   */
+  public gang(tileIds: [TileId, TileId, TileId]) {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Gang can only be done in WaitingPass state");
     }
 
-    if (this.current !== this.getNextPlayer()) {
-      throw new Error("only player next to the current player can chi");
-    }
+    const player = this.getNextPlayer();
 
     // check if the tiles are consecutive
-    if (!TileCore.isConsecutive(tileIds[0], tileIds[1], this.latestTile)) {
-      throw new Error("tiles are not consecutive");
+    if (!TileCore.isSame(tileIds[0], tileIds[1], tileIds[2], this.latestTile)) {
+      throw new Error("tiles are not the same");
     }
 
     // check if the tiles are in the hand
-    const index1 = player.handTiles.indexOf(tileIds[0]);
-    const index2 = player.handTiles.indexOf(tileIds[1]);
-    const index3 = player.handTiles.indexOf(tileIds[2]);
-    if (index1 === -1 || index2 === -1 || index3 === -1) {
+    if (!this.isTileInHand(player, tileIds)) {
       throw new Error("tiles are not in your hand");
     }
 
     // remove the tiles from the hand
-    player.handTiles.splice(index1, 1);
-    player.handTiles.splice(index2, 1);
-    player.handTiles.splice(index3, 1);
+    this.removeTilesFromHand(player, tileIds);
 
     // add to opened sets
     player.openedSets.push(
@@ -391,7 +402,10 @@ export class Game {
     return this;
   }
 
-  hu(player: Player) {
+  /**
+   * 胡, 胡完后进入 End 状态
+   */
+  public hu(player: Player) {
     if (
       ![GameState.WaitingPass, GameState.WaitingAction].includes(this.state)
     ) {
@@ -415,11 +429,17 @@ export class Game {
     return this;
   }
 
+  /**
+   * set the game state
+   */
   setState(state: GameState): this {
     this.state = state;
     return this;
   }
 
+  /**
+   * check if the tile is in the player's hand
+   */
   isTileInHand(player: Player, tiles: TileId | TileId[]): boolean {
     if (!Array.isArray(tiles)) {
       tiles = [tiles];
@@ -447,10 +467,6 @@ export class Game {
   }
 
   /**
-   * players
-   */
-
-  /**
    * add player to the game
    */
   setPlayer(player: Player): void {
@@ -476,17 +492,17 @@ export class Game {
   }
 
   /**
-   * find the next player of the current player
+   * find the next player
    *
-   * Note: this method does not change the current player
+   * @param player if not set, use the current player
    */
-  getNextPlayer(current: Player | null = null): Player {
-    current = current || this.current;
-    if (!current) {
+  getNextPlayer(player: Player | null = null): Player {
+    player = player || this.current;
+    if (!player) {
       throw new Error("current player is not set");
     }
 
-    let pos = current.position as Position;
+    let pos = player.position as Position;
     const direction = 1;
     while (!this.players[(pos + direction) % 4]) {
       pos += direction;
@@ -494,13 +510,15 @@ export class Game {
     return this.players[(pos + direction) % 4] as Player;
   }
 
+  /**
+   * set the latest tile
+   */
   setLatestTile(tile: TileId = TileCore.voidId): void {
     this.latestTile = tile;
   }
 
   /**
-   *
-   * @param tiles
+   * shuffle the tiles
    */
   shuffleArray<T>(tiles: T[]) {
     for (let i = tiles.length - 1; i > 0; i--) {
@@ -509,6 +527,9 @@ export class Game {
     }
   }
 
+  /**
+   * sort the tiles
+   */
   sortArray<T>(tiles: T[]) {
     tiles.sort((a, b) => (a > b ? 1 : -1));
   }
@@ -666,11 +687,11 @@ export class Game {
   }
 
   pick(): this {
-    if (
-      ![GameState.WaitingPass].includes(this.state) ||
-      this.passedPlayers.length !==
-        this.players.filter((player) => player).length
-    ) {
+    if (![GameState.WaitingPass].includes(this.state)) {
+      throw new Error("Pick can only be done in WaitingPass state");
+    }
+
+    if (!this.allPassed()) {
       throw new Error("Pick can only be done when all players have passed");
     }
 
@@ -681,6 +702,13 @@ export class Game {
     this.current.picked = this.pickTile();
 
     return this;
+  }
+
+  allPassed() {
+    return (
+      this.passedPlayers.length ===
+      this.players.filter((player) => player).length - 1
+    );
   }
 
   pickReverse() {
