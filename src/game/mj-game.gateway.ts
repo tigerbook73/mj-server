@@ -17,6 +17,8 @@ import {
   DeleteRoomResponse,
   DeleteUserRequest,
   DeleteUserResponse,
+  EnterGameRequest,
+  EnterGameResponse,
   GameEventType,
   GameRequest,
   GameRequestType,
@@ -122,16 +124,16 @@ export class MjGameGateway
         GameRequestType.LEAVE_ROOM,
         { update: true, handler: this.handleLeaveRoomRequest },
       ],
+      [
+        GameRequestType.ENTER_GAME,
+        { update: true, handler: this.handleEnterGameRequest },
+      ],
+      [
+        GameRequestType.QUIT_GAME,
+        { update: true, handler: this.handleQuitGameRequest },
+      ],
 
       // games
-      [
-        GameRequestType.START_GAME,
-        { update: true, handler: this.handleStartGameRequest },
-      ],
-      [
-        GameRequestType.RESET_GAME,
-        { update: true, handler: this.handleResetGameRequest },
-      ],
     ]);
   }
 
@@ -331,24 +333,6 @@ export class MjGameGateway
       type: request.type,
       status: "success",
       data: room,
-    };
-  }
-
-  handleStartGameRequest(request: StartGameRequest): StartGameResponse {
-    const room = this.roomService.find(request.data.roomName);
-    if (!room) {
-      throw new Error(`Room ${request.data.roomName} not found.`);
-    }
-
-    if (room.state !== RoomStatus.Open) {
-      throw new Error(`Room ${room.name} is not open.`);
-    }
-
-    this.gameService.startGame(room);
-    return {
-      type: request.type,
-      status: "success",
-      data: room.game,
     };
   }
 }
