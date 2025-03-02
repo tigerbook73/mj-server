@@ -345,9 +345,11 @@ export class MjGameGateway
       throw new Error(`Room ${request.data.roomName} not found.`);
     }
 
-    const user = this.clientService.findById(client.id)?.user;
+    const user = room.players.find(
+      (player) => player.userName === client.user?.name,
+    );
     if (!user) {
-      throw new Error(`User not logged in.`);
+      throw new Error(`User not in room cannot enter game.`);
     }
 
     this.roomService.enterGame(room);
