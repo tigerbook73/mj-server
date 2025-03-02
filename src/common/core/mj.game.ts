@@ -235,6 +235,186 @@ export class Game {
     this.setState(GameState.WaitingAction);
   }
 
+  pass(player: Player): this {
+    if (![GameState.WaitingPass].includes(this.state)) {
+      throw new Error("Pass can only be done in WaitingPass state");
+    }
+
+    if (this.current === player) {
+      // throw new Error("current player cannot pass");
+      // ignore
+      return this;
+    }
+
+    // ignore if the player has already passed
+    if (this.passedPlayers.includes(player)) {
+      return this;
+    }
+
+    this.passedPlayers.push(player);
+
+    if (
+      this.passedPlayers.length ===
+      this.players.filter((player) => player).length - 1
+    ) {
+      this.setCurrentPlayer(this.getNextPlayer());
+      this.pick();
+      this.setLatestTile(TileCore.voidId);
+      this.setState(GameState.WaitingAction);
+    }
+
+    return this;
+  }
+
+  chi(player: Player, tileIds: [TileId, TileId]): this {
+    if (![GameState.WaitingPass].includes(this.state)) {
+      throw new Error("Chi can only be done in WaitingPass state");
+    }
+
+    if (this.current !== this.getNextPlayer()) {
+      throw new Error("only player next to the current player can chi");
+    }
+
+    // check if the tiles are consecutive
+    if (!TileCore.isConsecutive(tileIds[0], tileIds[1], this.latestTile)) {
+      throw new Error("tiles are not consecutive");
+    }
+
+    // check if the tiles are in the hand
+    const index1 = player.handTiles.indexOf(tileIds[0]);
+    const index2 = player.handTiles.indexOf(tileIds[1]);
+    if (index1 === -1 || index2 === -1) {
+      throw new Error("tiles are not in your hand");
+    }
+
+    // remove the tiles from the hand
+    player.handTiles.splice(index1, 1);
+    player.handTiles.splice(index2, 1);
+
+    // add to opened sets
+    player.openedSets.push(
+      new OpenedSet(
+        [tileIds[0], tileIds[1], this.latestTile],
+        this.latestTile,
+        ActionType.Chi,
+        this.current.position,
+      ),
+    );
+
+    this.setCurrentPlayer(this.getNextPlayer());
+    this.setLatestTile(TileCore.voidId);
+    this.setState(GameState.WaitingAction);
+    return this;
+  }
+
+  peng(player: Player, tileIds: [TileId, TileId]) {
+    if (![GameState.WaitingPass].includes(this.state)) {
+      throw new Error("Peng can only be done in WaitingPass state");
+    }
+
+    if (this.current !== this.getNextPlayer()) {
+      throw new Error("only player next to the current player can peng");
+    }
+
+    // check if the tiles are consecutive
+    if (!TileCore.isSame(tileIds[0], tileIds[1], this.latestTile)) {
+      throw new Error("tiles are not consecutive");
+    }
+
+    // check if the tiles are in the hand
+    const index1 = player.handTiles.indexOf(tileIds[0]);
+    const index2 = player.handTiles.indexOf(tileIds[1]);
+    if (index1 === -1 || index2 === -1) {
+      throw new Error("tiles are not in your hand");
+    }
+
+    // remove the tiles from the hand
+    player.handTiles.splice(index1, 1);
+    player.handTiles.splice(index2, 1);
+
+    // add to opened sets
+    player.openedSets.push(
+      new OpenedSet(
+        [tileIds[0], tileIds[1], this.latestTile],
+        this.latestTile,
+        ActionType.Peng,
+        this.current.position,
+      ),
+    );
+
+    this.setCurrentPlayer(this.getNextPlayer());
+    this.setLatestTile(TileCore.voidId);
+    this.setState(GameState.WaitingAction);
+    return this;
+  }
+
+  gang(player: Player, tileIds: [TileId, TileId, TileId]) {
+    if (![GameState.WaitingPass].includes(this.state)) {
+      throw new Error("Gang can only be done in WaitingPass state");
+    }
+
+    if (this.current !== this.getNextPlayer()) {
+      throw new Error("only player next to the current player can chi");
+    }
+
+    // check if the tiles are consecutive
+    if (!TileCore.isConsecutive(tileIds[0], tileIds[1], this.latestTile)) {
+      throw new Error("tiles are not consecutive");
+    }
+
+    // check if the tiles are in the hand
+    const index1 = player.handTiles.indexOf(tileIds[0]);
+    const index2 = player.handTiles.indexOf(tileIds[1]);
+    const index3 = player.handTiles.indexOf(tileIds[2]);
+    if (index1 === -1 || index2 === -1 || index3 === -1) {
+      throw new Error("tiles are not in your hand");
+    }
+
+    // remove the tiles from the hand
+    player.handTiles.splice(index1, 1);
+    player.handTiles.splice(index2, 1);
+    player.handTiles.splice(index3, 1);
+
+    // add to opened sets
+    player.openedSets.push(
+      new OpenedSet(
+        [tileIds[0], tileIds[1], tileIds[2], this.latestTile],
+        this.latestTile,
+        ActionType.Gang,
+        this.current.position,
+      ),
+    );
+
+    this.setCurrentPlayer(this.getNextPlayer());
+    this.setLatestTile(TileCore.voidId);
+    this.setState(GameState.WaitingAction);
+    return this;
+  }
+
+  hu(player: Player) {
+    if (
+      ![GameState.WaitingPass, GameState.WaitingAction].includes(this.state)
+    ) {
+      throw new Error("Hu can only be done in WaitingPass state");
+    }
+
+    const tileIds = player.handTiles.slice();
+    if (player.picked !== TileCore.voidId) {
+      tileIds.push(player.picked);
+    }
+
+    if (this.latestTile !== TileCore.voidId) {
+      tileIds.push(this.latestTile);
+    }
+
+    if (!this.canHu(tileIds)) {
+      throw new Error("you cannot hu");
+    }
+
+    this.setState(GameState.End);
+    return this;
+  }
+
   setState(state: GameState): this {
     this.state = state;
     return this;
@@ -513,186 +693,6 @@ export class Game {
     }
 
     this.current.picked = this.pickTile(true);
-    return this;
-  }
-
-  pass(player: Player): this {
-    if (![GameState.WaitingPass].includes(this.state)) {
-      throw new Error("Pass can only be done in WaitingPass state");
-    }
-
-    if (this.current === player) {
-      // throw new Error("current player cannot pass");
-      // ignore
-      return this;
-    }
-
-    // ignore if the player has already passed
-    if (this.passedPlayers.includes(player)) {
-      return this;
-    }
-
-    this.passedPlayers.push(player);
-
-    if (
-      this.passedPlayers.length ===
-      this.players.filter((player) => player).length - 1
-    ) {
-      this.setCurrentPlayer(this.getNextPlayer());
-      this.pick();
-      this.setLatestTile(TileCore.voidId);
-      this.setState(GameState.WaitingAction);
-    }
-
-    return this;
-  }
-
-  chi(player: Player, tileIds: [TileId, TileId]): this {
-    if (![GameState.WaitingPass].includes(this.state)) {
-      throw new Error("Chi can only be done in WaitingPass state");
-    }
-
-    if (this.current !== this.getNextPlayer()) {
-      throw new Error("only player next to the current player can chi");
-    }
-
-    // check if the tiles are consecutive
-    if (!TileCore.isConsecutive(tileIds[0], tileIds[1], this.latestTile)) {
-      throw new Error("tiles are not consecutive");
-    }
-
-    // check if the tiles are in the hand
-    const index1 = player.handTiles.indexOf(tileIds[0]);
-    const index2 = player.handTiles.indexOf(tileIds[1]);
-    if (index1 === -1 || index2 === -1) {
-      throw new Error("tiles are not in your hand");
-    }
-
-    // remove the tiles from the hand
-    player.handTiles.splice(index1, 1);
-    player.handTiles.splice(index2, 1);
-
-    // add to opened sets
-    player.openedSets.push(
-      new OpenedSet(
-        [tileIds[0], tileIds[1], this.latestTile],
-        this.latestTile,
-        ActionType.Chi,
-        this.current.position,
-      ),
-    );
-
-    this.setCurrentPlayer(this.getNextPlayer());
-    this.setLatestTile(TileCore.voidId);
-    this.setState(GameState.WaitingAction);
-    return this;
-  }
-
-  peng(player: Player, tileIds: [TileId, TileId]) {
-    if (![GameState.WaitingPass].includes(this.state)) {
-      throw new Error("Peng can only be done in WaitingPass state");
-    }
-
-    if (this.current !== this.getNextPlayer()) {
-      throw new Error("only player next to the current player can peng");
-    }
-
-    // check if the tiles are consecutive
-    if (!TileCore.isSame(tileIds[0], tileIds[1], this.latestTile)) {
-      throw new Error("tiles are not consecutive");
-    }
-
-    // check if the tiles are in the hand
-    const index1 = player.handTiles.indexOf(tileIds[0]);
-    const index2 = player.handTiles.indexOf(tileIds[1]);
-    if (index1 === -1 || index2 === -1) {
-      throw new Error("tiles are not in your hand");
-    }
-
-    // remove the tiles from the hand
-    player.handTiles.splice(index1, 1);
-    player.handTiles.splice(index2, 1);
-
-    // add to opened sets
-    player.openedSets.push(
-      new OpenedSet(
-        [tileIds[0], tileIds[1], this.latestTile],
-        this.latestTile,
-        ActionType.Peng,
-        this.current.position,
-      ),
-    );
-
-    this.setCurrentPlayer(this.getNextPlayer());
-    this.setLatestTile(TileCore.voidId);
-    this.setState(GameState.WaitingAction);
-    return this;
-  }
-
-  gang(player: Player, tileIds: [TileId, TileId, TileId]) {
-    if (![GameState.WaitingPass].includes(this.state)) {
-      throw new Error("Gang can only be done in WaitingPass state");
-    }
-
-    if (this.current !== this.getNextPlayer()) {
-      throw new Error("only player next to the current player can chi");
-    }
-
-    // check if the tiles are consecutive
-    if (!TileCore.isConsecutive(tileIds[0], tileIds[1], this.latestTile)) {
-      throw new Error("tiles are not consecutive");
-    }
-
-    // check if the tiles are in the hand
-    const index1 = player.handTiles.indexOf(tileIds[0]);
-    const index2 = player.handTiles.indexOf(tileIds[1]);
-    const index3 = player.handTiles.indexOf(tileIds[2]);
-    if (index1 === -1 || index2 === -1 || index3 === -1) {
-      throw new Error("tiles are not in your hand");
-    }
-
-    // remove the tiles from the hand
-    player.handTiles.splice(index1, 1);
-    player.handTiles.splice(index2, 1);
-    player.handTiles.splice(index3, 1);
-
-    // add to opened sets
-    player.openedSets.push(
-      new OpenedSet(
-        [tileIds[0], tileIds[1], tileIds[2], this.latestTile],
-        this.latestTile,
-        ActionType.Gang,
-        this.current.position,
-      ),
-    );
-
-    this.setCurrentPlayer(this.getNextPlayer());
-    this.setLatestTile(TileCore.voidId);
-    this.setState(GameState.WaitingAction);
-    return this;
-  }
-
-  hu(player: Player) {
-    if (
-      ![GameState.WaitingPass, GameState.WaitingAction].includes(this.state)
-    ) {
-      throw new Error("Hu can only be done in WaitingPass state");
-    }
-
-    const tileIds = player.handTiles.slice();
-    if (player.picked !== TileCore.voidId) {
-      tileIds.push(player.picked);
-    }
-
-    if (this.latestTile !== TileCore.voidId) {
-      tileIds.push(this.latestTile);
-    }
-
-    if (!this.canHu(tileIds)) {
-      throw new Error("you cannot hu");
-    }
-
-    this.setState(GameState.End);
     return this;
   }
 
