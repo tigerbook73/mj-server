@@ -8,17 +8,13 @@ import { UserModel } from "src/common/models/user.model";
 import { UserService } from "./user.service";
 import { PlayerModel } from "src/common/models/player.model";
 import { PlayerRole, UserType } from "src/common/models/common.types";
-import { GameService } from "./game.service";
 import { Game, Position } from "src/common/core/mj.game";
 
 @Injectable()
 export class RoomService {
   public rooms: RoomModel[] = [];
 
-  constructor(
-    private userService: UserService,
-    private gameService: GameService,
-  ) {
+  constructor(private userService: UserService) {
     // default room
     this.create({ name: "room-1" });
     this.create({ name: "room-2" });
@@ -69,6 +65,10 @@ export class RoomService {
 
   findAll(): RoomModel[] {
     return this.rooms;
+  }
+
+  findByUser(user: UserModel): RoomModel | null {
+    return this.rooms.find((room) => room.findPlayer(user.name)) ?? null;
   }
 
   delete(roomDelete: RoomModel): void {
