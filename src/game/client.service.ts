@@ -29,9 +29,6 @@ export class ClientService {
   }
 
   delete(toDelete: ClientModel): void {
-    // send event to all subscribers
-    // ...
-
     this.clients = this.clients.filter((client) => client.id !== toDelete.id);
   }
 }
