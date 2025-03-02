@@ -201,13 +201,13 @@ export class RoomService {
         return;
       }
 
-      if (room.state === RoomStatus.Open) {
-        this.leaveRoom(user);
-        return;
-      }
-
       if (room.state === RoomStatus.Started) {
         this.quitGame(room);
+        // goto RoomStatus.Open
+      }
+
+      if (room.state === RoomStatus.Open) {
+        this.leaveRoom(user);
       }
     });
   }
