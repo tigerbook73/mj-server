@@ -1,5 +1,5 @@
 import { Game, Position, GameState } from "./mj.game";
-import { TileCore } from "./mj.tile-core";
+import { TileCore, TileId } from "./mj.tile-core";
 
 describe("Game Play", () => {
   let game: Game;
@@ -31,7 +31,7 @@ describe("Game Play", () => {
   });
 
   it("discard(picked)", () => {
-    game.discard(game.current.picked);
+    game.discard(game.current?.picked as TileId);
     expect(game.state).toBe(GameState.WaitingPass);
   });
 
@@ -43,7 +43,7 @@ describe("Game Play", () => {
   });
 
   it("discard(0)", () => {
-    game.discard(game.current.handTiles[0]);
+    game.discard(game.current?.handTiles[0] as TileId);
     expect(game.state).toBe(GameState.WaitingPass);
   });
 });

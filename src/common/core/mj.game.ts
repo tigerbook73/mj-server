@@ -175,6 +175,10 @@ export class Game {
       throw new Error("Discard can only be done in WaitingAction state");
     }
 
+    if (!this.current) {
+      throw new Error("current player is not set");
+    }
+
     const index = this.current.handTiles.indexOf(tile);
     if (index === -1 && this.current.picked !== tile) {
       throw new Error("tile is not in your hand");
@@ -203,6 +207,10 @@ export class Game {
   public angang(tileIds: [TileId, TileId, TileId, TileId]) {
     if (![GameState.WaitingAction].includes(this.state)) {
       throw new Error("Gang can only be done in WaitingAction state");
+    }
+
+    if (!this.current) {
+      throw new Error("current player is not set");
     }
 
     // check if the tiles are the same
@@ -243,6 +251,10 @@ export class Game {
       throw new Error("Hu can only be done in WaitingAction state");
     }
 
+    if (!this.current) {
+      throw new Error("current player is not set");
+    }
+
     const tileIds = this.current.handTiles.slice();
     tileIds.push(this.current.picked);
 
@@ -260,6 +272,10 @@ export class Game {
   public pass(player: Player): this {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Pass can only be done in WaitingPass state");
+    }
+
+    if (!this.current) {
+      throw new Error("current player is not set");
     }
 
     if (this.current === player) {
@@ -291,6 +307,10 @@ export class Game {
   public chi(tileIds: [TileId, TileId]): this {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Chi can only be done in WaitingPass state");
+    }
+
+    if (!this.current) {
+      throw new Error("current player is not set");
     }
 
     const player = this.getNextPlayer();
@@ -332,6 +352,10 @@ export class Game {
       throw new Error("Peng can only be done in WaitingPass state");
     }
 
+    if (!this.current) {
+      throw new Error("current player is not set");
+    }
+
     const player = this.getNextPlayer();
 
     // check if the tiles are consecutive
@@ -371,6 +395,10 @@ export class Game {
       throw new Error("Gang can only be done in WaitingPass state");
     }
 
+    if (!this.current) {
+      throw new Error("current player is not set");
+    }
+
     const player = this.getNextPlayer();
 
     // check if the tiles are consecutive
@@ -406,10 +434,12 @@ export class Game {
    * 胡, 胡完后进入 End 状态
    */
   public hu(player: Player) {
-    if (
-      ![GameState.WaitingPass, GameState.WaitingAction].includes(this.state)
-    ) {
+    if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Hu can only be done in WaitingPass state");
+    }
+
+    if (!this.current) {
+      throw new Error("current player is not set");
     }
 
     const tileIds = player.handTiles.slice();
@@ -691,6 +721,10 @@ export class Game {
       throw new Error("Pick can only be done in WaitingPass state");
     }
 
+    if (!this.current) {
+      throw new Error("current player is not set");
+    }
+
     if (!this.allPassed()) {
       throw new Error("Pick can only be done when all players have passed");
     }
@@ -704,16 +738,13 @@ export class Game {
     return this;
   }
 
-  allPassed() {
-    return (
-      this.passedPlayers.length ===
-      this.players.filter((player) => player).length - 1
-    );
-  }
-
   pickReverse() {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Pick can only be done when all players have passed");
+    }
+
+    if (!this.current) {
+      throw new Error("current player is not set");
     }
 
     if (this.current.picked !== TileCore.voidId) {
@@ -722,6 +753,13 @@ export class Game {
 
     this.current.picked = this.pickTile(true);
     return this;
+  }
+
+  allPassed() {
+    return (
+      this.passedPlayers.length ===
+      this.players.filter((player) => player).length - 1
+    );
   }
 
   canHu(tiles: TileId[]): boolean {
