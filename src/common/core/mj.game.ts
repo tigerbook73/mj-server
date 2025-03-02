@@ -206,7 +206,7 @@ export class Game {
     while (!this.players[(pos + direction) % 4]) {
       pos += direction;
     }
-    return this.players[(pos + direction) % 4];
+    return this.players[(pos + direction) % 4] as Player;
   }
 
   /**
@@ -447,7 +447,7 @@ export class Game {
       this.players.filter((player) => player).length
     ) {
       this.setCurrentPlayer(this.getNextPlayer());
-      this.pick(this.current);
+      this.pick(this.current as Player);
       this.setState(GameState.WaitingAction);
     }
 

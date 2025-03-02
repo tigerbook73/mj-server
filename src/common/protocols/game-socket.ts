@@ -40,7 +40,10 @@ export class GameSocket {
   }
 
   sendAndWait<T>(data: GameRequest): Promise<T> {
-    return this.socket?.timeout(2000).emitWithAck("mj:game", data);
+    return (
+      this.socket?.timeout(2000).emitWithAck("mj:game", data) ??
+      Promise.reject()
+    );
   }
 
   onReceive(callback: (data: GameResponse) => void) {
