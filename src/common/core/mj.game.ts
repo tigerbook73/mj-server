@@ -191,10 +191,6 @@ export class Game {
     return this;
   }
 
-  getCurrentPlayer(): Player {
-    return this.current;
-  }
-
   /**
    * find the next player of the current player
    *
@@ -277,10 +273,6 @@ export class Game {
     this.reversePickIndex = this.pickIndex - 1;
 
     return this;
-  }
-
-  getDealer(): Player {
-    return this.dealer as Player;
   }
 
   pickTile(from: "start" | "end" = "start"): TileId {
@@ -455,7 +447,7 @@ export class Game {
       this.players.filter((player) => player).length
     ) {
       this.setCurrentPlayer(this.getNextPlayer());
-      this.pick(this.getCurrentPlayer());
+      this.pick(this.current);
       this.setState(GameState.WaitingAction);
     }
 

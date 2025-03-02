@@ -34,10 +34,10 @@ describe("Game Play", () => {
   it("start()", () => {
     game.start();
     expect(game.state).toBe(GameState.WaitingAction);
-    expect(game.getDealer()).toBe(playerEast);
-    expect(game.getCurrentPlayer()).toBe(game.getDealer());
+    expect(game.dealer).toBe(playerEast);
+    expect(game.current).toBe(game.dealer);
 
-    current = game.getCurrentPlayer();
+    current = game.current;
   });
 
   it("discard(picked)", () => {
@@ -54,7 +54,7 @@ describe("Game Play", () => {
     game.pass(playerWest);
     expect(game.state).toBe(GameState.WaitingAction);
     expect(game.current).toBe(playerWest);
-    current = game.getCurrentPlayer();
+    current = game.current;
   });
 
   it("discard(0)", () => {
