@@ -1,4 +1,4 @@
-import { Game, Player, Position, GameState } from "./mj.game";
+import { Game, Position, GameState } from "./mj.game";
 import { TileCore } from "./mj.tile-core";
 
 describe("Game Play", () => {
