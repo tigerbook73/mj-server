@@ -15,13 +15,13 @@ export class RoomModel {
   name: string;
   state: RoomStatus;
   players: PlayerModel[];
-  game: Game;
+  game?: Game;
 
   constructor(roomCreate: RoomCreateDto) {
     this.name = roomCreate.name;
     this.state = RoomStatus.Open;
     this.players = [];
-    this.game = null;
+    this.game = undefined;
   }
 
   findPlayer(userName: string): PlayerModel | undefined {
