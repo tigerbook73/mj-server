@@ -34,7 +34,7 @@ export class GameService {
       throw new Error("Player is not the current player");
     }
 
-    game.discard(tileId);
+    game.drop(tileId);
     return game;
   }
 

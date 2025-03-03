@@ -37,6 +37,8 @@ import {
   SignInResponse,
   SignOutRequest,
   SignOutResponse,
+  StartGameRequest,
+  StartGameResponse,
 } from "src/common/protocols/apis.models";
 import { ClientService } from "./client.service";
 import { UserService } from "./user.service";
@@ -381,6 +383,31 @@ export class MjGameGateway
       type: request.type,
       status: "success",
       data: room,
+    };
+  }
+
+  handleStartGameRequest(
+    request: StartGameRequest,
+    client: ClientModel,
+  ): StartGameResponse {
+    if (!client.user) {
+      throw new Error("User not logged in.");
+    }
+
+    const room = this.roomService.findByUser(client.user);
+    if (!room) {
+      throw new Error("User not in room.");
+    }
+
+    if (!room.game) {
+      throw new Error("Game not init.");
+    }
+
+    room.game.start();
+    return {
+      type: request.type,
+      status: "success",
+      data: room.game,
     };
   }
 }
