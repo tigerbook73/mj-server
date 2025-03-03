@@ -11,6 +11,16 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import {
+  ActionAnGangRequest,
+  ActionAnGangResponse,
+  ActionChiRequest,
+  ActionChiResponse,
+  ActionDropRequest,
+  ActionDropResponse,
+  ActionHuZhimoRequest,
+  ActionHuZhimoResponse,
+  ActionPassRequest,
+  ActionPassResponse,
   CreateRoomRequest,
   CreateRoomResponse,
   DeleteRoomRequest,
@@ -33,12 +43,20 @@ import {
   ListUserResponse,
   QuitGameRequest,
   QuitGameResponse,
+  ResetGameRequest,
+  ResetGameResponse,
   SignInRequest,
   SignInResponse,
   SignOutRequest,
   SignOutResponse,
   StartGameRequest,
   StartGameResponse,
+  ActionPengRequest,
+  ActionPengResponse,
+  ActionGangRequest,
+  ActionGangResponse,
+  ActionHuRequest,
+  ActionHuResponse,
 } from "src/common/protocols/apis.models";
 import { ClientService } from "./client.service";
 import { UserService } from "./user.service";
@@ -46,6 +64,7 @@ import { RoomService } from "./room.service";
 import { GameService } from "./game.service";
 import { AuthService } from "./auth.service";
 import { ClientModel } from "src/common/models/client.model";
+import { Game, Player } from "src/common/core/mj.game";
 
 type RequestHandler = {
   update: boolean;
@@ -135,6 +154,46 @@ export class MjGameGateway
       ],
 
       // games
+      [
+        GameRequestType.START_GAME,
+        { update: true, handler: this.handleStartGameRequest },
+      ],
+      [
+        GameRequestType.RESET_GAME,
+        { update: true, handler: this.handleResetGameRequest },
+      ],
+      [
+        GameRequestType.ACTION_DROP,
+        { update: true, handler: this.handleActionDropRequest },
+      ],
+      [
+        GameRequestType.ACTION_ANGANG,
+        { update: true, handler: this.handleActionAnGangRequest },
+      ],
+      [
+        GameRequestType.ACTION_HUZHIMO,
+        { update: true, handler: this.handleActionHuzimoRequest },
+      ],
+      [
+        GameRequestType.ACTION_PASS,
+        { update: true, handler: this.handleActionPassRequest },
+      ],
+      [
+        GameRequestType.ACTION_CHI,
+        { update: true, handler: this.handleActionChiRequest },
+      ],
+      [
+        GameRequestType.ACTION_PENG,
+        { update: true, handler: this.handleActionPengRequest },
+      ],
+      [
+        GameRequestType.ACTION_GANG,
+        { update: true, handler: this.handleActionGangRequest },
+      ],
+      [
+        GameRequestType.ACTION_HU,
+        { update: true, handler: this.handleActionHuRequest },
+      ],
     ]);
   }
 
@@ -394,20 +453,171 @@ export class MjGameGateway
       throw new Error("User not logged in.");
     }
 
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.startGame(player, game);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  handleResetGameRequest(
+    request: ResetGameRequest,
+    client: ClientModel,
+  ): ResetGameResponse {
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.resetGame(player, game);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  handleActionDropRequest(
+    request: ActionDropRequest,
+    client: ClientModel,
+  ): ActionDropResponse {
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.actionDrop(player, game, request.data.tileId);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  handleActionAnGangRequest(
+    request: ActionAnGangRequest,
+    client: ClientModel,
+  ): ActionAnGangResponse {
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.actionAnGang(player, game, request.data.tileIds);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  handleActionHuzimoRequest(
+    request: ActionHuZhimoRequest,
+    client: ClientModel,
+  ): ActionHuZhimoResponse {
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.actionHuzimo(player, game);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  handleActionPassRequest(
+    request: ActionPassRequest,
+    client: ClientModel,
+  ): ActionPassResponse {
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.actionPass(player, game);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  handleActionChiRequest(
+    request: ActionChiRequest,
+    client: ClientModel,
+  ): ActionChiResponse {
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.actionChi(player, game, request.data.tileIds);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  handleActionPengRequest(
+    request: ActionPengRequest,
+    client: ClientModel,
+  ): ActionPengResponse {
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.actionPeng(player, game, request.data.tileIds);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  handleActionGangRequest(
+    request: ActionGangRequest,
+    client: ClientModel,
+  ): ActionGangResponse {
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.actionGong(player, game, request.data.tileIds);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  handleActionHuRequest(
+    request: ActionHuRequest,
+    client: ClientModel,
+  ): ActionHuResponse {
+    const { game, player } = this.validateGamePlayer(client);
+
+    this.gameService.actionHu(player, game);
+    return {
+      type: request.type,
+      status: "success",
+      data: game,
+    };
+  }
+
+  validateGamePlayer(client: ClientModel): { game: Game; player: Player } {
+    if (!client.user) {
+      throw new Error("User not logged in.");
+    }
+
     const room = this.roomService.findByUser(client.user);
     if (!room) {
       throw new Error("User not in room.");
     }
 
-    if (!room.game) {
+    const game = room.game;
+    if (!game) {
       throw new Error("Game not init.");
     }
 
-    room.game.start();
-    return {
-      type: request.type,
-      status: "success",
-      data: room.game,
-    };
+    const player = room.players.find(
+      (player) => player.userName === client.user.name,
+    );
+    if (!player) {
+      throw new Error("Player not in the game.");
+    }
+
+    const gamePlayer = game.players.find(
+      (gamePlayer) => gamePlayer.position === player.position,
+    );
+    if (!gamePlayer) {
+      throw new Error("Player position not found in game.");
+    }
+
+    return { game: room.game, player: gamePlayer };
   }
 }

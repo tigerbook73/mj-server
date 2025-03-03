@@ -36,7 +36,7 @@ export enum GameRequestType {
   ACTION_HUZHIMO = "actionHuZhimo",
   ACTION_PASS = "actionPass",
   ACTION_CHI = "actionChi",
-  ACTION_PONG = "actionPong",
+  ACTION_PENG = "actionPeng",
   ACTION_GANG = "actionGang",
   ACTION_HU = "actionHu",
 }
@@ -254,15 +254,15 @@ export interface ActionChiResponse extends GameResponse {
   data: Game;
 }
 
-export interface ActionPongRequest extends GameRequest {
-  type: GameRequestType.ACTION_PONG;
+export interface ActionPengRequest extends GameRequest {
+  type: GameRequestType.ACTION_PENG;
   data: {
     tileIds: [TileId, TileId];
   };
 }
 
-export interface ActionPongResponse extends GameResponse {
-  type: GameRequestType.ACTION_PONG;
+export interface ActionPengResponse extends GameResponse {
+  type: GameRequestType.ACTION_PENG;
   data: Game;
 }
 
@@ -554,16 +554,16 @@ export class ClientApi {
     return response.data;
   }
 
-  async actionPong(tileIds: [TileId, TileId]): Promise<Game> {
-    const request: ActionPongRequest = {
-      type: GameRequestType.ACTION_PONG,
+  async actionPeng(tileIds: [TileId, TileId]): Promise<Game> {
+    const request: ActionPengRequest = {
+      type: GameRequestType.ACTION_PENG,
       data: {
         tileIds,
       },
     };
     const response = await this.sendRequest<
-      ActionPongRequest,
-      ActionPongResponse
+      ActionPengRequest,
+      ActionPengResponse
     >(request);
     return response.data;
   }

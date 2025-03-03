@@ -28,7 +28,7 @@ export class GameService {
     return game;
   }
 
-  actionDiscard(player: Player, game: Game, tileId: TileId): Game {
+  actionDrop(player: Player, game: Game, tileId: TileId): Game {
     // player is the current player
     if (game.current !== player) {
       throw new Error("Player is not the current player");
@@ -39,22 +39,32 @@ export class GameService {
   }
 
   actionAnGang(
-    game: Game,
     player: Player,
+    game: Game,
     tileIds: [TileId, TileId, TileId, TileId],
   ): Game {
+    // player is the current player
+    if (game.current !== player) {
+      throw new Error("Player is not the current player");
+    }
+
     game.angang(tileIds);
     return game;
   }
 
   actionHuzimo(player: Player, game: Game): Game {
+    // player is the current player
+    if (game.current !== player) {
+      throw new Error("Player is not the current player");
+    }
+
     game.huZhimo();
     return game;
   }
 
   actionPass(player: Player, game: Game): Game {
     // player is in current game and not the current player
-    if (player == game.current || !game.players.includes(player)) {
+    if (player === game.current || !game.players.includes(player)) {
       throw new Error("Player is not in current game or is the current player");
     }
 
