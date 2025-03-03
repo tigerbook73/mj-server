@@ -31,7 +31,7 @@ describe("Game Play", () => {
   });
 
   it("discard(picked)", () => {
-    game.discard(game.current?.picked as TileId);
+    game.drop(game.current?.picked as TileId);
     expect(game.state).toBe(GameState.WaitingPass);
   });
 
@@ -43,7 +43,7 @@ describe("Game Play", () => {
   });
 
   it("discard(0)", () => {
-    game.discard(game.current?.handTiles[0] as TileId);
+    game.drop(game.current?.handTiles[0] as TileId);
     expect(game.state).toBe(GameState.WaitingPass);
   });
 });

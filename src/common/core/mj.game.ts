@@ -170,7 +170,7 @@ export class Game {
   /**
    * 打牌，打完牌后进入 WaitingPass 状态
    */
-  public discard(tile: TileId): this {
+  public drop(tile: TileId): this {
     if (![GameState.WaitingAction].includes(this.state)) {
       throw new Error("Discard can only be done in WaitingAction state");
     }
