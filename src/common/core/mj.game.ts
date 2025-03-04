@@ -886,4 +886,83 @@ export class Game {
 
     return [];
   }
+
+  /**
+   * Serialize the game state to a JSON object
+   */
+  public serialize(): any {
+    return {
+      players: this.players.map((player) =>
+        player
+          ? {
+              position: player.position,
+              handTiles: player.handTiles,
+              picked: player.picked,
+              openedSets: player.openedSets.map((set) => ({
+                tiles: set.tiles,
+                target: set.target,
+                actionType: set.actionType,
+                from: set.from,
+              })),
+            }
+          : undefined,
+      ),
+      walls: this.walls.map((wall) => ({
+        position: wall.position,
+        tiles: wall.tiles,
+      })),
+      discards: this.discards.map((discard) => ({
+        position: discard.position,
+        tiles: discard.tiles,
+      })),
+      state: this.state,
+      latestTile: this.latestTile,
+      current: this.current ? this.current.position : null,
+      dealer: this.dealer ? this.dealer.position : null,
+      pickPosition: this.pickPosition,
+      pickIndex: this.pickIndex,
+      reversePickPosition: this.reversePickPosition,
+      reversePickIndex: this.reversePickIndex,
+      passedPlayers: this.passedPlayers.map((player) => player.position),
+    };
+  }
+
+  /**
+   * Deserialize the game state from a JSON object
+   */
+  public static deserialize(data: any): Game {
+    const game = new Game();
+    game.players = data.players.map((playerData: any) =>
+      playerData
+        ? new Player(
+            playerData.position,
+            playerData.handTiles,
+            playerData.picked,
+            playerData.openedSets.map(
+              (set: any) =>
+                new OpenedSet(set.tiles, set.target, set.actionType, set.from),
+            ),
+          )
+        : undefined,
+    );
+    game.walls = data.walls.map(
+      (wallData: any) => new Wall(wallData.position, wallData.tiles),
+    );
+    game.discards = data.discards.map(
+      (discardData: any) =>
+        new Discard(discardData.position, discardData.tiles),
+    );
+    game.state = data.state;
+    game.latestTile = data.latestTile;
+    game.current = data.current !== null ? game.players[data.current] : null;
+    game.dealer = data.dealer !== null ? game.players[data.dealer] : null;
+    game.pickPosition = data.pickPosition;
+    game.pickIndex = data.pickIndex;
+    game.reversePickPosition = data.reversePickPosition;
+    game.reversePickIndex = data.reversePickIndex;
+    game.passedPlayers = data.passedPlayers.map(
+      (position: any) => game.players[position],
+    );
+    return game;
+  }
 }
