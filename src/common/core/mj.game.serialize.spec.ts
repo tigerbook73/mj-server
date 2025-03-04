@@ -1,4 +1,5 @@
 import { Game, Position } from "./mj.game";
+import { TileId } from "./mj.tile-core";
 
 describe("Game serialization", () => {
   it("should serialize and deserialize the game state correctly", () => {
@@ -16,7 +17,7 @@ describe("Game serialization", () => {
     expect(newGame).toEqual(game);
     expect(newGame.serialize()).toEqual(json);
 
-    game.drop(game.current.handTiles[0]);
+    game.drop(game.current?.handTiles[0] as TileId);
     json = game.serialize();
     newGame = Game.deserialize(json);
     expect(newGame).toEqual(game);

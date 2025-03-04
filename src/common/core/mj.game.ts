@@ -890,7 +890,7 @@ export class Game {
   /**
    * Serialize the game state to a JSON object
    */
-  public serialize(): any {
+  public serialize(): unknown {
     return {
       players: this.players.map((player) =>
         player
@@ -930,8 +930,10 @@ export class Game {
   /**
    * Deserialize the game state from a JSON object
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   public static deserialize(data: any): Game {
     const game = new Game();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     game.players = data.players.map((playerData: any) =>
       playerData
         ? new Player(
@@ -939,6 +941,7 @@ export class Game {
             playerData.handTiles,
             playerData.picked,
             playerData.openedSets.map(
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (set: any) =>
                 new OpenedSet(set.tiles, set.target, set.actionType, set.from),
             ),
@@ -946,21 +949,26 @@ export class Game {
         : undefined,
     );
     game.walls = data.walls.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (wallData: any) => new Wall(wallData.position, wallData.tiles),
     );
     game.discards = data.discards.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (discardData: any) =>
         new Discard(discardData.position, discardData.tiles),
     );
     game.state = data.state;
     game.latestTile = data.latestTile;
-    game.current = data.current !== null ? game.players[data.current] : null;
-    game.dealer = data.dealer !== null ? game.players[data.dealer] : null;
+    game.current =
+      data.current !== null ? game.players[data.current] || null : null;
+    game.dealer =
+      data.dealer !== null ? game.players[data.dealer] || null : null;
     game.pickPosition = data.pickPosition;
     game.pickIndex = data.pickIndex;
     game.reversePickPosition = data.reversePickPosition;
     game.reversePickIndex = data.reversePickIndex;
     game.passedPlayers = data.passedPlayers.map(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (position: any) => game.players[position],
     );
     return game;
