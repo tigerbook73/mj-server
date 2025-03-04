@@ -38,7 +38,7 @@ describe("EventsGateway", () => {
 
   describe("identity", () => {
     it("should return the same number has what was sent", (done) => {
-      socket.emit("identity", 0, (response) => {
+      socket.emit("identity", 0, (response: any) => {
         expect(response).toBe(0);
         done();
       });
