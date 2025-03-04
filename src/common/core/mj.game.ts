@@ -86,7 +86,7 @@ export class Discard {
 }
 
 export class Game {
-  public players: (Player | undefined)[] = []; // 玩家
+  public players: (Player | null)[] = []; // 玩家
   public walls: Wall[] = []; // 牌墙
   public discards: Discard[] = []; // 打出的牌
   public state: GameState = GameState.Init; // 游戏状态
@@ -109,10 +109,10 @@ export class Game {
    */
   public init(positions: Position[]) {
     // 0: 东，1: 南，2: 西，3: 北
-    this.players = []; // 没有玩家的位置是undefined
+    this.players = []; // 没有玩家的位置是null
     this.players.length = 4;
     for (let position = Position.East; position <= Position.North; position++) {
-      this.players[position] = undefined;
+      this.players[position] = null;
     }
 
     // wall
@@ -783,7 +783,7 @@ export class Game {
       if (TileCore.isSame(tiles[i], tiles[i + 1])) {
         const rest = tiles.slice(i, 2);
 
-        const result = [];
+        const result: [TileId, TileId, TileId][] = [];
 
         while (rest.length >= 3) {
           if (TileCore.isSame(rest[0], rest[1], rest[2])) {
@@ -905,7 +905,7 @@ export class Game {
                 from: set.from,
               })),
             }
-          : undefined,
+          : null,
       ),
       walls: this.walls.map((wall) => ({
         position: wall.position,

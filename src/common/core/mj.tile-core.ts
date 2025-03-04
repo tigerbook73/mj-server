@@ -248,7 +248,7 @@ export class TileCore {
     tile2: TileCore | TileId,
     tile3: TileCore | TileId = TileCore.voidId,
   ) {
-    const tiles = [];
+    const tiles: TileCore[] = [];
     tiles.push(tile1 instanceof TileCore ? tile1 : TileCore.fromId(tile1));
     tiles.push(tile2 instanceof TileCore ? tile2 : TileCore.fromId(tile2));
     if (tile3 !== TileCore.voidId) {

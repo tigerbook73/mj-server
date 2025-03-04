@@ -24,22 +24,22 @@ export class RoomService {
     room.state = RoomStatus.Open;
     room.players = [
       new PlayerModel(
-        this.userService.findBot(Position.East),
+        this.userService.findBot(Position.East) as UserModel,
         room,
         Position.East,
       ),
       new PlayerModel(
-        this.userService.findBot(Position.South),
+        this.userService.findBot(Position.South) as UserModel,
         room,
         Position.South,
       ),
       new PlayerModel(
-        this.userService.findBot(Position.West),
+        this.userService.findBot(Position.West) as UserModel,
         room,
         Position.West,
       ),
       new PlayerModel(
-        this.userService.findBot(Position.North),
+        this.userService.findBot(Position.North) as UserModel,
         room,
         Position.North,
       ),
@@ -59,7 +59,7 @@ export class RoomService {
     return room;
   }
 
-  find(name: string): RoomModel {
+  find(name: string): RoomModel | null {
     return this.rooms.find((room) => room.name === name) ?? null;
   }
 
@@ -101,7 +101,7 @@ export class RoomService {
 
     // position must be available
     const currentPlayer = room.findPlayerByPosition(position);
-    if (currentPlayer.type !== UserType.Bot) {
+    if (currentPlayer?.type !== UserType.Bot) {
       throw new Error(`Position ${position} is already taken.`);
     }
 
@@ -126,16 +126,18 @@ export class RoomService {
 
   leaveRoom(user: UserModel): void {
     // find room
-    let room: RoomModel;
+    let room: RoomModel | undefined;
+    let player: PlayerModel | undefined;
     for (const r of this.rooms) {
-      if (r.findPlayer(user.name)) {
+      player = r.findPlayer(user.name);
+      if (player) {
         room = r;
         break;
       }
     }
 
     // user must be in a room
-    if (!room) {
+    if (!room || !player) {
       return;
     }
 
@@ -145,15 +147,12 @@ export class RoomService {
     }
 
     // remove user from room
-    const playerToRemove = room.findPlayer(user.name);
-    room.players = room.players.filter(
-      (player) => player.userName !== playerToRemove.userName,
-    );
+    room.players = room.players.filter((p) => p.userName !== player.userName);
     room.players.push(
       new PlayerModel(
-        this.userService.findBot(playerToRemove.position),
+        this.userService.findBot(player.position) as UserModel,
         room,
-        playerToRemove.position,
+        player.position,
       ),
     );
 

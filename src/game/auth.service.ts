@@ -44,14 +44,6 @@ export class AuthService {
       throw new Error("Password is incorrect");
     }
 
-    if (client.user && client.user.email !== user.email) {
-      // sign out the current user
-      // sign in current user
-
-      // temporary solution
-      throw new Error("User already signed in");
-    }
-
     client.user = user;
     return user;
   }

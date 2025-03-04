@@ -16,11 +16,11 @@ export class ClientService {
     return room;
   }
 
-  findById(id: string): ClientModel {
+  findById(id: string): ClientModel | null {
     return this.clients.find((client) => client.id === id) ?? null;
   }
 
-  findBySocket(socket: unknown): ClientModel {
+  findBySocket(socket: unknown): ClientModel | null {
     return this.clients.find((client) => client.socket === socket) ?? null;
   }
 

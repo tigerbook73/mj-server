@@ -269,7 +269,7 @@ export class MjGameGateway
 
   handleSignInRequest(
     request: SignInRequest,
-    client?: ClientModel,
+    client: ClientModel,
   ): SignInResponse {
     const user = this.authService.signIn(request.data, client);
     return {
@@ -599,20 +599,19 @@ export class MjGameGateway
       throw new Error("User not in room.");
     }
 
-    const game = room.game;
-    if (!game) {
+    if (!room.game) {
       throw new Error("Game not init.");
     }
 
     const player = room.players.find(
-      (player) => player.userName === client.user.name,
+      (player) => player.userName === client.user?.name,
     );
     if (!player) {
       throw new Error("Player not in the game.");
     }
 
-    const gamePlayer = game.players.find(
-      (gamePlayer) => gamePlayer.position === player.position,
+    const gamePlayer = room.game.players.find(
+      (gamePlayer) => gamePlayer?.position === player.position,
     );
     if (!gamePlayer) {
       throw new Error("Player position not found in game.");
