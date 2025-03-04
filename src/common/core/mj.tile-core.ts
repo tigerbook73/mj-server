@@ -221,7 +221,6 @@ export class TileCore {
     tile1: TileCore | TileId,
     tile2: TileCore | TileId,
     tile3: TileCore | TileId = TileCore.voidId,
-
     tile4: TileCore | TileId = TileCore.voidId,
   ) {
     const t1 = tile1 instanceof TileCore ? tile1 : TileCore.fromId(tile1);
