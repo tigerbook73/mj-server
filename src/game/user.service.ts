@@ -25,7 +25,7 @@ export class UserService {
       throw new Error(`User with name ${userCreate.name} already exists.`);
     }
 
-    const user = new UserModel(userCreate);
+    const user = UserModel.create(userCreate);
     this.users.push(user);
     return user;
   }
@@ -36,12 +36,10 @@ export class UserService {
     }
 
     const bot = new UserModel(
-      {
-        name: `bot-${position}`,
-        firstName: "bot",
-        lastName: Position[position],
-        email: `${position}@mj-game.com`,
-      },
+      `bot-${position}`,
+      "bot",
+      Position[position],
+      `${position}@mj-game.com`,
       "",
       UserType.Bot,
     );

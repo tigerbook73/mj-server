@@ -11,24 +11,37 @@ export interface UserCreateDto {
  * Represents a user in the system.
  */
 export class UserModel {
-  name: string; // use email as default
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  type: UserType;
-
   constructor(
-    userCreate: UserCreateDto,
-    password: string = "",
-    type: UserType = UserType.Human,
-  ) {
-    this.name = userCreate.name;
-    this.firstName = userCreate.firstName;
-    this.lastName = userCreate.lastName;
-    this.email = userCreate.email;
-    this.password = password;
-    this.type = type;
+    public name: string, // use email as default
+    public firstName: string,
+    public lastName: string,
+    public email: string,
+    public password: string,
+    public type: UserType,
+  ) {}
+
+  static create(userCreate: UserCreateDto): UserModel {
+    const user = new UserModel(
+      userCreate.name,
+      userCreate.firstName,
+      userCreate.lastName,
+      userCreate.email,
+      "",
+      UserType.Human,
+    );
+    return user;
+  }
+
+  static fromJSON(data: any): UserModel {
+    const user = new UserModel(
+      data.name,
+      data.firstName,
+      data.lastName,
+      data.email,
+      data.password,
+      data.type,
+    );
+    return user;
   }
 
   toJSON() {

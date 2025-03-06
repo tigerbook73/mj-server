@@ -25,7 +25,7 @@ export class ClientModel {
     const client = new ClientModel(
       data.id,
       data.socket,
-      new UserModel(data.user),
+      UserModel.fromJSON(data.user),
     );
     return client;
   }
