@@ -11,7 +11,7 @@ export class ClientService {
   }
 
   create(clientCreate: ClientCreateDto): ClientModel {
-    const room = new ClientModel(clientCreate);
+    const room = ClientModel.create(clientCreate);
     this.clients.push(room);
     return room;
   }
