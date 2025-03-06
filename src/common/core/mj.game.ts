@@ -14,7 +14,7 @@ export const enum ActionType {
 /**
  * 玩家的位置
  */
-export const enum Position {
+export enum Position {
   East = 0,
   South = 1,
   West = 2,
