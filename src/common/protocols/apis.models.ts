@@ -1,6 +1,7 @@
-import { Game, Position } from "../core/mj.game";
+import { Game, Player, Position } from "../core/mj.game";
 import { TileId } from "../core/mj.tile-core";
 import { ClientModel } from "../models/client.model";
+import { PlayerModel } from "../models/player.model";
 import { RoomCreateDto, RoomModel } from "../models/room.model";
 import { UserModel } from "../models/user.model";
 import { GameSocket } from "./game-socket";
@@ -605,5 +606,81 @@ export class ClientApi {
         rooms: event.data.rooms.map((data: any) => RoomModel.fromJSON(data)),
       },
     };
+  }
+
+  findMyClient(event: GameEvent): ClientModel | null {
+    const socket = this.gameSocket.socket;
+    if (!socket) {
+      return null;
+    }
+
+    if (!socket.connected) {
+      return null;
+    }
+
+    return event.data.clients.find((client) => client.id === socket.id) || null;
+  }
+
+  findMyUser(event: GameEvent): UserModel | null {
+    const client = this.findMyClient(event);
+    if (!client) {
+      return null;
+    }
+
+    return client.user;
+  }
+
+  findMyRoom(event: GameEvent): RoomModel | null {
+    const user = this.findMyUser(event);
+    if (!user) {
+      return null;
+    }
+
+    return (
+      event.data.rooms.find((room) =>
+        room.players.find((player) => player.userName === user.name),
+      ) || null
+    );
+  }
+
+  findMyPlayerModel(event: GameEvent): PlayerModel | null {
+    const user = this.findMyUser(event);
+    if (!user) {
+      return null;
+    }
+
+    const room = this.findMyRoom(event);
+    if (!room) {
+      return null;
+    }
+
+    return room.players.find((player) => player.userName === user.name) || null;
+  }
+
+  findMyGame(event: GameEvent): Game | null {
+    const room = this.findMyRoom(event);
+    if (!room) {
+      return null;
+    }
+
+    return room.game;
+  }
+
+  findMyPlayer(event: GameEvent): Player | null {
+    const game = this.findMyGame(event);
+    if (!game) {
+      return null;
+    }
+
+    const playerModel = this.findMyPlayerModel(event);
+    if (!playerModel) {
+      return null;
+    }
+
+    return (
+      game.players.find(
+        (player) => player?.position === playerModel.position,
+      ) || null
+    );
   }
 }
