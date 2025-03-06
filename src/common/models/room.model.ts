@@ -12,16 +12,34 @@ export const enum RoomStatus {
 }
 
 export class RoomModel {
-  name: string;
-  state: RoomStatus;
-  players: PlayerModel[];
-  game: Game | null;
+  constructor(
+    public name: string,
+    public state: RoomStatus,
+    public players: PlayerModel[],
+    public game: Game | null,
+  ) {}
 
-  constructor(roomCreate: RoomCreateDto) {
-    this.name = roomCreate.name;
-    this.state = RoomStatus.Open;
-    this.players = [];
-    this.game = null;
+  static create(roomCreate: RoomCreateDto): RoomModel {
+    return new RoomModel(roomCreate.name, RoomStatus.Open, [], null);
+  }
+
+  // only for client side
+  static fromJSON(json: any): RoomModel {
+    return new RoomModel(
+      json.name,
+      json.state,
+      json.players.map((player: any) => PlayerModel.fromJSON(player)),
+      json.game ? Game.fromJSON(json.game) : null,
+    );
+  }
+
+  toJSON(): any {
+    return {
+      name: this.name,
+      state: this.state,
+      players: this.players,
+      game: this.game?.toJSON() ?? null,
+    };
   }
 
   findPlayer(userName: string): PlayerModel | undefined {

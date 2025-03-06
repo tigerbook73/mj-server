@@ -1,5 +1,3 @@
-import { RoomModel } from "./room.model";
-import { UserModel } from "./user.model";
 import { PlayerRole, UserType } from "./common.types";
 import { Position } from "../core/mj.game";
 
@@ -7,22 +5,33 @@ import { Position } from "../core/mj.game";
  * Represents a user in one game.
  */
 export class PlayerModel {
-  userName: string; // user name
-  roomName: string; // room name
-  role: PlayerRole; // player role: Player or Observer
-  type: UserType; // player type: Human or Bot
-  position: Position; // player position: East, West, North, South
-
   constructor(
-    user: UserModel,
-    room: RoomModel,
-    position: Position,
-    role = PlayerRole.Player,
-  ) {
-    this.userName = user.name;
-    this.roomName = room.name;
-    this.position = position;
-    this.role = role;
-    this.type = user.type;
+    public userName: string, // user name
+    public roomName: string, // room name
+    public role: PlayerRole, // player role: Player or Observer
+    public type: UserType, // player type: Human or Bot
+    public position: Position, // player position: East, West, North, South
+  ) {}
+
+  // only for client side
+  static fromJSON(data: any): PlayerModel {
+    const player = new PlayerModel(
+      data.userName,
+      data.roomName,
+      data.role,
+      data.type,
+      data.position,
+    );
+    return player;
+  }
+
+  toJSON() {
+    return {
+      userName: this.userName,
+      roomName: this.roomName,
+      role: this.role,
+      type: this.type,
+      position: this.position,
+    };
   }
 }

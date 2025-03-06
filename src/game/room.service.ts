@@ -24,23 +24,31 @@ export class RoomService {
     room.state = RoomStatus.Open;
     room.players = [
       new PlayerModel(
-        this.userService.findBot(Position.East) as UserModel,
-        room,
+        (this.userService.findBot(Position.East) as UserModel).name,
+        room.name,
+        PlayerRole.Player,
+        UserType.Bot,
         Position.East,
       ),
       new PlayerModel(
-        this.userService.findBot(Position.South) as UserModel,
-        room,
+        (this.userService.findBot(Position.South) as UserModel).name,
+        room.name,
+        PlayerRole.Player,
+        UserType.Bot,
         Position.South,
       ),
       new PlayerModel(
-        this.userService.findBot(Position.West) as UserModel,
-        room,
+        (this.userService.findBot(Position.West) as UserModel).name,
+        room.name,
+        PlayerRole.Player,
+        UserType.Bot,
         Position.West,
       ),
       new PlayerModel(
-        this.userService.findBot(Position.North) as UserModel,
-        room,
+        (this.userService.findBot(Position.North) as UserModel).name,
+        room.name,
+        PlayerRole.Player,
+        UserType.Bot,
         Position.North,
       ),
     ];
@@ -52,7 +60,7 @@ export class RoomService {
       throw new Error(`Room with name ${roomCreate.name} already exists.`);
     }
 
-    const room = new RoomModel(roomCreate);
+    const room = RoomModel.create(roomCreate);
     this.rooms.push(room);
 
     this.resetRoom(room);
@@ -118,7 +126,13 @@ export class RoomService {
     );
 
     // add user to room
-    const player = new PlayerModel(user, room, position, role);
+    const player = new PlayerModel(
+      user.name,
+      room.name,
+      role,
+      UserType.Human,
+      position,
+    );
     room.players.push(player);
 
     return player;
@@ -150,8 +164,10 @@ export class RoomService {
     room.players = room.players.filter((p) => p.userName !== player.userName);
     room.players.push(
       new PlayerModel(
-        this.userService.findBot(player.position) as UserModel,
-        room,
+        (this.userService.findBot(player.position) as UserModel).name,
+        room.name,
+        PlayerRole.Observer,
+        UserType.Bot,
         player.position,
       ),
     );

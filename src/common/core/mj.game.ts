@@ -31,6 +31,16 @@ export class OpenedSet {
     public actionType: ActionType,
     public from: Position, // 来自哪个玩家
   ) {}
+
+  static fromJSON(data: any): OpenedSet {
+    return new OpenedSet(
+      //
+      data.tiles,
+      data.target,
+      data.actionType,
+      data.from,
+    );
+  }
 }
 
 /**
@@ -43,6 +53,16 @@ export class Player {
     public picked: TileId = TileCore.voidId, // 玩家最后一次摸的牌
     public openedSets: OpenedSet[] = [], // 玩家已经碰，吃，杠的牌
   ) {}
+
+  static fromJSON(data: any): Player {
+    return new Player(
+      //
+      data.position,
+      data.handTiles,
+      data.picked,
+      data.openedSets.map((set: any) => OpenedSet.fromJSON(set)),
+    );
+  }
 }
 
 /**
@@ -74,14 +94,20 @@ export class Wall {
     public position: Position = Position.East,
     public tiles: TileId[] = [],
   ) {}
+
+  static fromJSON(data: any): Wall {
+    return new Wall(data.position, data.tiles);
+  }
 }
 
 export class Discard {
   constructor(
     public position: Position = Position.East,
     public tiles: TileId[] = [],
-  ) {
-    //
+  ) {}
+
+  static fromJSON(data: any): Discard {
+    return new Discard(data.position, data.tiles);
   }
 }
 
@@ -890,31 +916,12 @@ export class Game {
   /**
    * Serialize the game state to a JSON object
    */
-  public serialize(): unknown {
+
+  public toJSON() {
     return {
-      players: this.players.map((player) =>
-        player
-          ? {
-              position: player.position,
-              handTiles: player.handTiles,
-              picked: player.picked,
-              openedSets: player.openedSets.map((set) => ({
-                tiles: set.tiles,
-                target: set.target,
-                actionType: set.actionType,
-                from: set.from,
-              })),
-            }
-          : null,
-      ),
-      walls: this.walls.map((wall) => ({
-        position: wall.position,
-        tiles: wall.tiles,
-      })),
-      discards: this.discards.map((discard) => ({
-        position: discard.position,
-        tiles: discard.tiles,
-      })),
+      players: this.players,
+      walls: this.walls,
+      discards: this.discards,
       state: this.state,
       latestTile: this.latestTile,
       current: this.current ? this.current.position : null,
@@ -927,49 +934,25 @@ export class Game {
     };
   }
 
-  /**
-   * Deserialize the game state from a JSON object
-   */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  public static deserialize(data: any): Game {
+  static fromJSON(data: any): Game {
     const game = new Game();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     game.players = data.players.map((playerData: any) =>
-      playerData
-        ? new Player(
-            playerData.position,
-            playerData.handTiles,
-            playerData.picked,
-            playerData.openedSets.map(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (set: any) =>
-                new OpenedSet(set.tiles, set.target, set.actionType, set.from),
-            ),
-          )
-        : undefined,
+      playerData ? Player.fromJSON(playerData) : null,
     );
-    game.walls = data.walls.map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (wallData: any) => new Wall(wallData.position, wallData.tiles),
-    );
-    game.discards = data.discards.map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (discardData: any) =>
-        new Discard(discardData.position, discardData.tiles),
+    game.walls = data.walls.map((wallData: any) => Wall.fromJSON(wallData));
+    game.discards = data.discards.map((discardData: any) =>
+      Discard.fromJSON(discardData),
     );
     game.state = data.state;
     game.latestTile = data.latestTile;
-    game.current =
-      data.current !== null ? game.players[data.current] || null : null;
-    game.dealer =
-      data.dealer !== null ? game.players[data.dealer] || null : null;
+    game.current = data.current !== null ? game.players[data.current] : null;
+    game.dealer = data.dealer !== null ? game.players[data.dealer] : null;
     game.pickPosition = data.pickPosition;
     game.pickIndex = data.pickIndex;
     game.reversePickPosition = data.reversePickPosition;
     game.reversePickIndex = data.reversePickIndex;
     game.passedPlayers = data.passedPlayers.map(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (position: any) => game.players[position],
+      (position: Position) => game.players[position],
     );
     return game;
   }

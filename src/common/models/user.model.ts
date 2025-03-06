@@ -32,6 +32,7 @@ export class UserModel {
     return user;
   }
 
+  // only for client side
   static fromJSON(data: any): UserModel {
     const user = new UserModel(
       data.name,
