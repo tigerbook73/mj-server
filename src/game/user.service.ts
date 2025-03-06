@@ -49,7 +49,7 @@ export class UserService {
     return bot;
   }
 
-  find(name: string): UserModel {
+  find(name: string): UserModel | null {
     return (
       this.users.find(
         (user) => user.type === UserType.Human && user.name === name,
@@ -61,7 +61,7 @@ export class UserService {
     return this.users;
   }
 
-  findBot(position: Position): UserModel {
+  findBot(position: Position): UserModel | null {
     return (
       this.users.find(
         (user) =>

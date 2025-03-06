@@ -476,7 +476,7 @@ export class ClientApi {
       StartGameRequest,
       StartGameResponse
     >(request);
-    return response.data;
+    return Game.deserialize(response.data);
   }
 
   async resetGame(): Promise<Game> {
@@ -487,7 +487,7 @@ export class ClientApi {
       ResetGameRequest,
       ResetGameResponse
     >(request);
-    return response.data;
+    return Game.deserialize(response.data);
   }
 
   async actionDrop(tileId: TileId): Promise<Game> {
@@ -501,7 +501,7 @@ export class ClientApi {
       ActionDropRequest,
       ActionDropResponse
     >(request);
-    return response.data;
+    return Game.deserialize(response.data);
   }
 
   async actionAnGang(tileIds: [TileId, TileId, TileId, TileId]): Promise<Game> {
@@ -515,7 +515,7 @@ export class ClientApi {
       ActionAnGangRequest,
       ActionAnGangResponse
     >(request);
-    return response.data;
+    return Game.deserialize(response.data);
   }
 
   async actionHuZhimo(): Promise<Game> {
@@ -526,7 +526,7 @@ export class ClientApi {
       ActionHuZhimoRequest,
       ActionHuZhimoResponse
     >(request);
-    return response.data;
+    return Game.deserialize(response.data);
   }
 
   async actionPass(): Promise<Game> {
@@ -537,7 +537,7 @@ export class ClientApi {
       ActionPassRequest,
       ActionPassResponse
     >(request);
-    return response.data;
+    return Game.deserialize(response.data);
   }
 
   async actionChi(tileIds: [TileId, TileId]): Promise<Game> {
@@ -551,7 +551,7 @@ export class ClientApi {
       ActionChiRequest,
       ActionChiResponse
     >(request);
-    return response.data;
+    return Game.deserialize(response.data);
   }
 
   async actionPeng(tileIds: [TileId, TileId]): Promise<Game> {
@@ -565,7 +565,7 @@ export class ClientApi {
       ActionPengRequest,
       ActionPengResponse
     >(request);
-    return response.data;
+    return Game.deserialize(response.data);
   }
 
   async actionGang(tileIds: [TileId, TileId, TileId]): Promise<Game> {
@@ -579,7 +579,7 @@ export class ClientApi {
       ActionGangRequest,
       ActionGangResponse
     >(request);
-    return response.data;
+    return Game.deserialize(response.data);
   }
 
   async actionHu(): Promise<Game> {
@@ -589,6 +589,6 @@ export class ClientApi {
     const response = await this.sendRequest<ActionHuRequest, ActionHuResponse>(
       request,
     );
-    return response.data;
+    return Game.deserialize(response.data);
   }
 }

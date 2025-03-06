@@ -23,7 +23,9 @@ export class GameService {
     if (!game.players.includes(player)) {
       throw new Error("Player is not in current game");
     }
-    const positions = game.players.map((player) => player.position);
+    const positions = game.players
+      .filter((player) => player)
+      .map((player) => (player as Player).position);
     game.init(positions);
     return game;
   }
