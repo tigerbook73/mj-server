@@ -330,7 +330,7 @@ export class ClientApi {
     const response = await this.sendRequest<SignInRequest, SignInResponse>(
       request,
     );
-    return response.data;
+    return UserModel.fromJSON(response.data);
   }
 
   async signOut(): Promise<void> {
@@ -351,7 +351,7 @@ export class ClientApi {
       ListClientRequest,
       ListClientResponse
     >(request);
-    return response.data;
+    return response.data.map((data) => ClientModel.fromJSON(data));
   }
 
   /**
@@ -364,7 +364,7 @@ export class ClientApi {
     const response = await this.sendRequest<ListUserRequest, ListUserResponse>(
       request,
     );
-    return response.data;
+    return response.data.map((data) => UserModel.fromJSON(data));
   }
 
   async deleteUser(name: string): Promise<void> {
@@ -391,7 +391,7 @@ export class ClientApi {
       CreateRoomRequest,
       CreateRoomResponse
     >(request);
-    return response.data;
+    return RoomModel.fromJSON(response.data);
   }
 
   async deleteRoom(roomName: string): Promise<void> {
@@ -411,7 +411,7 @@ export class ClientApi {
     const response = await this.sendRequest<ListRoomRequest, ListRoomResponse>(
       request,
     );
-    return response.data;
+    return response.data.map((data) => RoomModel.fromJSON(data));
   }
 
   async joinRoom(roomName: string, position: Position): Promise<RoomModel> {
@@ -425,7 +425,7 @@ export class ClientApi {
     const response = await this.sendRequest<JoinRoomRequest, JoinRoomResponse>(
       request,
     );
-    return response.data;
+    return RoomModel.fromJSON(response.data);
   }
 
   async leaveRoom(roomName: string): Promise<void> {
@@ -449,7 +449,7 @@ export class ClientApi {
       EnterGameRequest,
       EnterGameResponse
     >(request);
-    return response.data;
+    return RoomModel.fromJSON(response.data);
   }
 
   async quitGame(roomName: string): Promise<RoomModel> {
@@ -462,7 +462,7 @@ export class ClientApi {
     const response = await this.sendRequest<QuitGameRequest, QuitGameResponse>(
       request,
     );
-    return response.data;
+    return RoomModel.fromJSON(response.data);
   }
 
   /**
@@ -590,5 +590,20 @@ export class ClientApi {
       request,
     );
     return Game.fromJSON(response.data);
+  }
+
+  /**
+   * event parser
+   */
+  parseEvent(event: any): GameEvent {
+    return {
+      type: event.type,
+      data: {
+        clients: event.data.clients.map((data: any) =>
+          ClientModel.fromJSON(data),
+        ),
+        rooms: event.data.rooms.map((data: any) => RoomModel.fromJSON(data)),
+      },
+    };
   }
 }
