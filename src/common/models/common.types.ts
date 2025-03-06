@@ -1,9 +1,9 @@
-export enum PlayerRole {
+export const enum PlayerRole {
   Player = "player",
   Observer = "observer",
 }
 
-export enum UserType {
+export const enum UserType {
   Human = "human",
   Bot = "bot",
 }

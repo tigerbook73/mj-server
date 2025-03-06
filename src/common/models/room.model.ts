@@ -5,7 +5,7 @@ export interface RoomCreateDto {
   name: string;
 }
 
-export enum RoomStatus {
+export const enum RoomStatus {
   Open = "open",
   Started = "started",
   Finished = "finished",

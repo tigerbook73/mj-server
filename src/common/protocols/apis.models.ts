@@ -5,7 +5,7 @@ import { RoomCreateDto, RoomModel } from "../models/room.model";
 import { UserModel } from "../models/user.model";
 import { GameSocket } from "./game-socket";
 
-export enum GameRequestType {
+export const enum GameRequestType {
   // Authentication
   SIGN_IN = "signIn",
   SIGN_OUT = "signOut",
@@ -287,7 +287,7 @@ export interface ActionHuResponse extends GameResponse {
   data: Game;
 }
 
-export enum GameEventType {
+export const enum GameEventType {
   GAME_UPDATED = "gameUpdated",
 }
 

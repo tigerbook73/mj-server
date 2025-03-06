@@ -3,7 +3,7 @@ import { type TileId, TileCore } from "./mj.tile-core";
 /**
  * 动作类型
  */
-export enum ActionType {
+export const enum ActionType {
   Peng = "peng",
   Chi = "chi",
   Gang = "gang",
@@ -14,7 +14,7 @@ export enum ActionType {
 /**
  * 玩家的位置
  */
-export enum Position {
+export const enum Position {
   East = 0,
   South = 1,
   West = 2,
@@ -48,7 +48,7 @@ export class Player {
 /**
  * 游戏状态
  */
-export enum GameState {
+export const enum GameState {
   Init = "init", // 初始
   Dispatching = "dispatching", // 发牌中，后续可以拆分成更小的状态
   WaitingAction = "wating_action", // 等待玩家操作: 胡/暗杠/打牌

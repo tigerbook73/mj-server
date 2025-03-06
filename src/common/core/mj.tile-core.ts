@@ -4,7 +4,7 @@
 
 export type TileId = number;
 
-export enum TileType {
+export const enum TileType {
   WAN = "万",
   TONG = "筒",
   TIAO = "条",
