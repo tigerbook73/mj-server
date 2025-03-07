@@ -205,7 +205,8 @@ export class MjGameGateway
     try {
       const clientModel = this.clientService.create({
         id: client.id,
-        socket: client.id,
+        socketId: client.id,
+        socket: client,
       });
 
       this.logger.log(`Client connected: ${client.id}`);

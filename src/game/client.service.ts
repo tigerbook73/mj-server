@@ -21,7 +21,7 @@ export class ClientService {
   }
 
   findBySocket(socket: unknown): ClientModel | null {
-    return this.clients.find((client) => client.socket === socket) ?? null;
+    return this.clients.find((client) => client.socketId === socket) ?? null;
   }
 
   findAll(): ClientModel[] {
@@ -30,5 +30,9 @@ export class ClientService {
 
   delete(toDelete: ClientModel): void {
     this.clients = this.clients.filter((client) => client.id !== toDelete.id);
+  }
+
+  sendToClient(client: ClientModel, data: any): void {
+    client.socket?.emit("mj:game", data);
   }
 }
