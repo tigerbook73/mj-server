@@ -307,10 +307,15 @@ export class ClientApi {
    * auth APIs
    */
 
-  protected async sendRequest<REQ extends GameRequest, RES>(
-    request: REQ,
-  ): Promise<RES> {
-    return this.gameSocket.sendAndWait<RES>(request);
+  protected async sendRequest<
+    REQ extends GameRequest,
+    RES extends GameResponse,
+  >(request: REQ): Promise<RES> {
+    const response = await this.gameSocket.sendAndWait<RES>(request);
+    if (response.status === "error") {
+      throw new Error(response.message);
+    }
+    return response;
   }
 
   /**
