@@ -202,31 +202,39 @@ export class MjGameGateway
   }
 
   handleConnection(client: Socket) {
-    const clientModel = this.clientService.create({
-      id: client.id,
-      socket: client.id,
-    });
+    try {
+      const clientModel = this.clientService.create({
+        id: client.id,
+        socket: client.id,
+      });
 
-    this.logger.log(`Client connected: ${client.id}`);
+      this.logger.log(`Client connected: ${client.id}`);
 
-    return clientModel;
+      return clientModel;
+    } catch (error) {
+      this.logger.warn(error);
+    }
   }
 
   handleDisconnect(client: Socket) {
-    const clientModel = this.clientService.findById(client.id);
-    if (!clientModel) {
-      throw new Error("Client not found");
+    try {
+      const clientModel = this.clientService.findById(client.id);
+      if (!clientModel) {
+        throw new Error("Client not found");
+      }
+
+      this.logger.log(`Client disconnected: ${client.id}`);
+      this.clientService.delete(clientModel);
+
+      if (!clientModel.user) {
+        this.authService.signOut(clientModel);
+        return;
+      }
+
+      this.roomService.dropUser(clientModel.user);
+    } catch (error) {
+      this.logger.warn(error);
     }
-
-    this.logger.log(`Client disconnected: ${client.id}`);
-    this.clientService.delete(clientModel);
-
-    if (!clientModel.user) {
-      this.authService.signOut(clientModel);
-      return;
-    }
-
-    this.roomService.dropUser(clientModel.user);
   }
 
   @SubscribeMessage("mj:game")
