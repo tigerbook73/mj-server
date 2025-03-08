@@ -224,6 +224,8 @@ export class Game {
     this.setLatestTile(tile);
     this.setState(GameState.WaitingPass);
 
+    this.handlePassedPlayers();
+
     return this;
   }
 
@@ -317,12 +319,7 @@ export class Game {
 
     this.passedPlayers.push(player);
 
-    if (this.allPassed()) {
-      this.setCurrentPlayer(this.getNextPlayer());
-      this.pick();
-      this.setLatestTile(TileCore.voidId);
-      this.setState(GameState.WaitingAction);
-    }
+    this.handlePassedPlayers();
 
     return this;
   }
@@ -491,6 +488,23 @@ export class Game {
   setState(state: GameState): this {
     this.state = state;
     return this;
+  }
+
+  /**
+   * Handles the scenario where all players have passed their turn.
+   * If all players have passed, it performs the following actions:
+   * - Sets the current player to the next player.
+   * - Picks a tile for the current player.
+   * - Sets the latest tile to a void ID.
+   * - Updates the game state to `WaitingAction`.
+   */
+  private handlePassedPlayers() {
+    if (this.allPassed()) {
+      this.setCurrentPlayer(this.getNextPlayer());
+      this.pick();
+      this.setLatestTile(TileCore.voidId);
+      this.setState(GameState.WaitingAction);
+    }
   }
 
   /**
