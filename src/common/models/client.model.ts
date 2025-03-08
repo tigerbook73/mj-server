@@ -32,7 +32,7 @@ export class ClientModel {
     const client = new ClientModel(
       data.id,
       data.socket,
-      UserModel.fromJSON(data.user),
+      data.user ? UserModel.fromJSON(data.user) : null,
       null,
     );
     return client;

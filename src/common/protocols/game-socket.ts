@@ -11,8 +11,8 @@ export class GameSocket {
     // "undefined" means the URL will be computed from the `window.location` object
     this.socket = io(undefined);
 
-    this.socket.on("connect", this.onConnected);
-    this.socket.on("disconnect", this.onDisconnected);
+    this.socket.on("connect", this.onConnected.bind(this));
+    this.socket.on("disconnect", this.onDisconnected.bind(this));
   }
 
   private onConnected() {
@@ -39,11 +39,16 @@ export class GameSocket {
     this.socket?.emit("mj:game", data);
   }
 
-  sendAndWait<T>(data: GameRequest): Promise<T> {
-    return (
-      this.socket?.timeout(2000).emitWithAck("mj:game", data) ??
-      Promise.reject()
-    );
+  sendAndWait<T extends GameResponse>(data: GameRequest): Promise<T> {
+    if (!this.socket) {
+      return Promise.reject({
+        type: data.type,
+        state: "error",
+        message: "There is no connection to the server",
+      });
+    } else {
+      return this.socket.timeout(2000).emitWithAck("mj:game", data);
+    }
   }
 
   onReceive(callback: (data: GameResponse) => void) {
