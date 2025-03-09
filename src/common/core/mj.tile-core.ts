@@ -9,7 +9,7 @@ export const enum TileType {
   TONG = "筒",
   TIAO = "条",
   JIAN = "箭",
-  KONG = "空",
+  KONG = "",
 }
 
 export class TileCore {
@@ -32,7 +32,7 @@ export class TileCore {
     TileCore.unknownId,
     TileType.KONG,
     0,
-    "空",
+    "",
   );
 
   static readonly voidId = -1;
@@ -40,7 +40,7 @@ export class TileCore {
     TileCore.voidId,
     TileType.KONG,
     0,
-    "空",
+    "",
   );
 
   static readonly allTiles = [
