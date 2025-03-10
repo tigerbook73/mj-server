@@ -40,7 +40,7 @@ export class GameService {
     return game;
   }
 
-  actionAnGang(
+  actionAngang(
     player: Player,
     game: Game,
     tileIds: [TileId, TileId, TileId, TileId],
@@ -54,13 +54,13 @@ export class GameService {
     return game;
   }
 
-  actionHuzimo(player: Player, game: Game): Game {
+  actionZimo(player: Player, game: Game): Game {
     // player is the current player
     if (game.current !== player) {
       throw new Error("Player is not the current player");
     }
 
-    game.huZhimo();
+    game.zimo();
     return game;
   }
 

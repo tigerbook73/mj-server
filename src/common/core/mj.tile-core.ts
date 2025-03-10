@@ -9,7 +9,7 @@ export const enum TileType {
   TONG = "筒",
   TIAO = "条",
   JIAN = "箭",
-  KONG = "",
+  KONG = " ",
 }
 
 export class TileCore {

@@ -7,7 +7,7 @@ export const enum ActionType {
   Peng = "peng",
   Chi = "chi",
   Gang = "gang",
-  AnGang = "angang",
+  Angang = "angang",
   Hu = "hu",
 }
 
@@ -259,7 +259,7 @@ export class Game {
       new OpenedSet(
         [tileIds[0], tileIds[1], tileIds[2], tileIds[3]],
         TileCore.voidId,
-        ActionType.AnGang,
+        ActionType.Angang,
         this.current.position,
       ),
     );
@@ -269,12 +269,14 @@ export class Game {
 
     this.pickReverse();
     this.setState(GameState.WaitingAction);
+
+    this.handlePassedPlayers();
   }
 
   /**
    * 自摸胡, 自摸胡后进入 End 状态
    */
-  public huZhimo(): this {
+  public zimo(): this {
     if (![GameState.WaitingAction].includes(this.state)) {
       throw new Error("Hu can only be done in WaitingAction state");
     }

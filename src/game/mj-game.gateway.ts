@@ -11,14 +11,14 @@ import {
 } from "@nestjs/websockets";
 import { Server, Socket } from "socket.io";
 import {
-  ActionAnGangRequest,
-  ActionAnGangResponse,
+  ActionAngangRequest,
+  ActionAngangResponse,
   ActionChiRequest,
   ActionChiResponse,
   ActionDropRequest,
   ActionDropResponse,
-  ActionHuZhimoRequest,
-  ActionHuZhimoResponse,
+  ActionZimoRequest,
+  ActionZimoResponse,
   ActionPassRequest,
   ActionPassResponse,
   CreateRoomRequest,
@@ -168,11 +168,11 @@ export class MjGameGateway
       ],
       [
         GameRequestType.ACTION_ANGANG,
-        { update: true, handler: this.handleActionAnGangRequest },
+        { update: true, handler: this.handleActionAngangRequest },
       ],
       [
-        GameRequestType.ACTION_HUZHIMO,
-        { update: true, handler: this.handleActionHuzimoRequest },
+        GameRequestType.ACTION_ZIMO,
+        { update: true, handler: this.handleActionZimoRequest },
       ],
       [
         GameRequestType.ACTION_PASS,
@@ -500,13 +500,13 @@ export class MjGameGateway
     };
   }
 
-  handleActionAnGangRequest(
-    request: ActionAnGangRequest,
+  handleActionAngangRequest(
+    request: ActionAngangRequest,
     client: ClientModel,
-  ): ActionAnGangResponse {
+  ): ActionAngangResponse {
     const { game, player } = this.validateGamePlayer(client);
 
-    this.gameService.actionAnGang(player, game, request.data.tileIds);
+    this.gameService.actionAngang(player, game, request.data.tileIds);
     return {
       type: request.type,
       status: "success",
@@ -514,13 +514,13 @@ export class MjGameGateway
     };
   }
 
-  handleActionHuzimoRequest(
-    request: ActionHuZhimoRequest,
+  handleActionZimoRequest(
+    request: ActionZimoRequest,
     client: ClientModel,
-  ): ActionHuZhimoResponse {
+  ): ActionZimoResponse {
     const { game, player } = this.validateGamePlayer(client);
 
-    this.gameService.actionHuzimo(player, game);
+    this.gameService.actionZimo(player, game);
     return {
       type: request.type,
       status: "success",

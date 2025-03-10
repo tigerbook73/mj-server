@@ -33,8 +33,8 @@ export const enum GameRequestType {
 
   // Game Action
   ACTION_DROP = "actionDrop",
-  ACTION_ANGANG = "actionAnGang",
-  ACTION_HUZHIMO = "actionHuZhimo",
+  ACTION_ANGANG = "actionAngang",
+  ACTION_ZIMO = "actionZimo",
   ACTION_PASS = "actionPass",
   ACTION_CHI = "actionChi",
   ACTION_PENG = "actionPeng",
@@ -213,24 +213,24 @@ export interface ActionDropResponse extends GameResponse {
   data: Game;
 }
 
-export interface ActionAnGangRequest extends GameRequest {
+export interface ActionAngangRequest extends GameRequest {
   type: GameRequestType.ACTION_ANGANG;
   data: {
     tileIds: [TileId, TileId, TileId, TileId];
   };
 }
 
-export interface ActionAnGangResponse extends GameResponse {
+export interface ActionAngangResponse extends GameResponse {
   type: GameRequestType.ACTION_ANGANG;
   data: Game;
 }
 
-export interface ActionHuZhimoRequest extends GameRequest {
-  type: GameRequestType.ACTION_HUZHIMO;
+export interface ActionZimoRequest extends GameRequest {
+  type: GameRequestType.ACTION_ZIMO;
 }
 
-export interface ActionHuZhimoResponse extends GameResponse {
-  type: GameRequestType.ACTION_HUZHIMO;
+export interface ActionZimoResponse extends GameResponse {
+  type: GameRequestType.ACTION_ZIMO;
   data: Game;
 }
 
@@ -510,27 +510,27 @@ export class ClientApi {
     return Game.fromJSON(response.data);
   }
 
-  async actionAnGang(tileIds: [TileId, TileId, TileId, TileId]): Promise<Game> {
-    const request: ActionAnGangRequest = {
+  async actionAngang(tileIds: [TileId, TileId, TileId, TileId]): Promise<Game> {
+    const request: ActionAngangRequest = {
       type: GameRequestType.ACTION_ANGANG,
       data: {
         tileIds,
       },
     };
     const response = await this.sendRequest<
-      ActionAnGangRequest,
-      ActionAnGangResponse
+      ActionAngangRequest,
+      ActionAngangResponse
     >(request);
     return Game.fromJSON(response.data);
   }
 
-  async actionHuZhimo(): Promise<Game> {
-    const request: ActionHuZhimoRequest = {
-      type: GameRequestType.ACTION_HUZHIMO,
+  async actionZimo(): Promise<Game> {
+    const request: ActionZimoRequest = {
+      type: GameRequestType.ACTION_ZIMO,
     };
     const response = await this.sendRequest<
-      ActionHuZhimoRequest,
-      ActionHuZhimoResponse
+      ActionZimoRequest,
+      ActionZimoResponse
     >(request);
     return Game.fromJSON(response.data);
   }
