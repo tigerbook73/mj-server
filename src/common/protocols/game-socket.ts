@@ -1,5 +1,5 @@
 import { io, Socket } from "socket.io-client";
-import { GameRequest, GameResponse } from "./apis.models";
+import { GameEvent, GameRequest, GameResponse } from "./apis.models";
 
 export class GameSocket {
   public socket: Socket | null = null;
@@ -51,12 +51,12 @@ export class GameSocket {
     }
   }
 
-  onReceive(callback: (data: GameResponse) => void) {
+  onReceive(callback: (data: GameEvent) => void) {
     this.socket?.on("mj:game", callback);
     return callback;
   }
 
-  offReceive(callback: (data: GameResponse) => void) {
+  offReceive(callback: (data: GameEvent) => void) {
     this.socket?.off("mj:game", callback);
   }
 }
