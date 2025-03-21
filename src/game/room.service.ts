@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import {
   RoomCreateDto,
   RoomModel,
@@ -9,12 +9,20 @@ import { UserService } from "./user.service";
 import { PlayerModel } from "src/common/models/player.model";
 import { PlayerRole, UserType } from "src/common/models/common.types";
 import { Game, Position } from "src/common/core/mj.game";
+import { Interval } from "@nestjs/schedule";
+import { ClientService } from "./client.service";
 
 @Injectable()
 export class RoomService {
   public rooms: RoomModel[] = [];
+  public userDropList: { user: UserModel; expiresAt: EpochTimeStamp }[] = [];
 
-  constructor(private userService: UserService) {
+  private readonly logger = new Logger(RoomService.name);
+
+  constructor(
+    private userService: UserService,
+    private clientService: ClientService,
+  ) {
     // default room
     this.create({ name: "room-1" });
     this.create({ name: "room-2" });
@@ -225,5 +233,36 @@ export class RoomService {
         this.leaveRoom(user);
       }
     });
+  }
+
+  addUserDropList(user: UserModel): void {
+    if (!this.userDropList.find((u) => u.user.name === user.name)) {
+      this.userDropList.push({
+        user,
+        expiresAt: Date.now() / 1000 + 10, // 10 seconds
+      });
+      this.logger.log(`User ${user.name} added to drop list.`);
+    }
+  }
+
+  @Interval(2000)
+  checkUserDropList(): void {
+    const newList = [];
+    for (const u of this.userDropList) {
+      if (this.clientService.findByUser(u.user.name)) {
+        this.logger.log(`User ${u.user.name} removed from drop list.`);
+        continue;
+      }
+
+      if (u.expiresAt <= Date.now() / 1000) {
+        this.dropUser(u.user);
+        this.logger.log(`User ${u.user.name} is dropped.`);
+        continue;
+      }
+
+      newList.push(u);
+    }
+
+    this.userDropList = newList;
   }
 }

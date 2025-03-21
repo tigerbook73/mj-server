@@ -227,12 +227,10 @@ export class MjGameGateway
       this.logger.log(`Client disconnected: ${client.id}`);
       this.clientService.delete(clientModel);
 
-      if (!clientModel.user) {
-        this.authService.signOut(clientModel);
-        return;
+      if (clientModel.user) {
+        this.roomService.addUserDropList(clientModel.user);
+        clientModel.user = null;
       }
-
-      this.roomService.dropUser(clientModel.user);
     } catch (error) {
       this.logger.warn(error);
     }

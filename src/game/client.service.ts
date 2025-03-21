@@ -24,6 +24,12 @@ export class ClientService {
     return this.clients.find((client) => client.socketId === socket) ?? null;
   }
 
+  findByUser(userName: string): ClientModel | null {
+    return (
+      this.clients.find((client) => client.user?.name === userName) ?? null
+    );
+  }
+
   findAll(): ClientModel[] {
     return this.clients;
   }
