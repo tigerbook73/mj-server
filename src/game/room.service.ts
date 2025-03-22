@@ -239,7 +239,7 @@ export class RoomService {
     if (!this.userDropList.find((u) => u.user.name === user.name)) {
       this.userDropList.push({
         user,
-        expiresAt: Date.now() / 1000 + 10, // 10 seconds
+        expiresAt: Date.now() / 1000 + 30, // 30 seconds
       });
       this.logger.log(`User ${user.name} added to drop list.`);
     }
