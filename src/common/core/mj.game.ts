@@ -9,6 +9,26 @@ export const enum ActionType {
   Gang = "gang",
   Angang = "angang",
   Hu = "hu",
+  Pass = "pass",
+}
+
+export const enum ActionResult {
+  Waiting = "waiting", // waiting for action
+  Passed = "passed", // action is passed (rejected)
+  Accepting = "accepting", // action is accepting, however, there might be other high priority actions to be decided
+  Accepted = "accepted", // action is accepted
+}
+
+/**
+ * 动作的细节
+ */
+export class ActionDetail {
+  constructor(
+    public type: ActionType,
+    public player: Player,
+    public tiles: TileId[] = [],
+    public status: ActionResult = ActionResult.Waiting,
+  ) {}
 }
 
 /**
@@ -124,7 +144,8 @@ export class Game {
   public reversePickPosition: Position = Position.East; // 反向摸牌位置（东南西北）(杠)
   public reversePickIndex: number = 0; // 反向摸牌位置
 
-  public passedPlayers: Player[] = []; // 已经过的玩家, 仅用于 WaitingPass 状态
+  public passedPlayers: Player[] = []; // 已经过的玩家，该属性仅用户client side
+  private queuedActions: ActionDetail[] = []; // 等待处理的动作，该属性不用于Client Side
 
   constructor() {
     //
@@ -223,8 +244,9 @@ export class Game {
 
     this.setLatestTile(tile);
     this.setState(GameState.WaitingPass);
+    this.prepareQueueActions();
 
-    this.handlePassedPlayers();
+    this.handleQueuedActions();
 
     return this;
   }
@@ -270,7 +292,7 @@ export class Game {
     this.pickReverse();
     this.setState(GameState.WaitingAction);
 
-    this.handlePassedPlayers();
+    this.handleQueuedActions();
   }
 
   /**
@@ -314,14 +336,24 @@ export class Game {
       return this;
     }
 
-    // ignore if the player has already passed
-    if (this.passedPlayers.includes(player)) {
+    // if decision is made, then ignore
+    if (
+      this.queuedActions.find(
+        (action) =>
+          action.player.position === player.position &&
+          action.status !== ActionResult.Waiting,
+      )
+    ) {
       return this;
     }
 
-    this.passedPlayers.push(player);
-
-    this.handlePassedPlayers();
+    // passed all queued actions for the player
+    for (const action of this.queuedActions) {
+      if (action.player.position === player.position) {
+        action.status = ActionResult.Passed;
+      }
+    }
+    this.handleQueuedActions();
 
     return this;
   }
@@ -350,6 +382,35 @@ export class Game {
       throw new Error("tiles are not in your hand");
     }
 
+    // if decision is made, then ignore
+    if (
+      this.queuedActions.find(
+        (action) =>
+          action.player.position === player.position &&
+          action.status !== ActionResult.Waiting,
+      )
+    ) {
+      return this;
+    }
+
+    // update player's chi action => accepting, update player's other actions => passed
+    for (const action of this.queuedActions) {
+      if (action.player.position === player.position) {
+        if (action.type === ActionType.Chi) {
+          action.tiles = tileIds;
+          action.status = ActionResult.Accepting;
+        } else {
+          action.status = ActionResult.Passed;
+        }
+      }
+    }
+
+    this.handleQueuedActions();
+
+    return this;
+
+    /*
+    TODO: move to handleQueuedActions();
     // remove the tiles from the hand
     this.removeTilesFromHand(player, tileIds);
 
@@ -367,6 +428,7 @@ export class Game {
     this.setLatestTile(TileCore.voidId);
     this.setState(GameState.WaitingAction);
     return this;
+    */
   }
 
   /**
@@ -393,6 +455,37 @@ export class Game {
       throw new Error("tiles are not in your hand");
     }
 
+    // if decision is made, then ignore
+    if (
+      this.queuedActions.find(
+        (action) =>
+          action.player.position === player.position &&
+          action.status !== ActionResult.Waiting,
+      )
+    ) {
+      return this;
+    }
+
+    // update player's peng action => accepting, update player's other actions => passed
+    for (const action of this.queuedActions) {
+      if (action.player.position === player.position) {
+        if (
+          action.type === ActionType.Peng ||
+          action.type === ActionType.Gang
+        ) {
+          action.tiles = tileIds;
+          action.status = ActionResult.Accepting;
+        } else {
+          action.status = ActionResult.Passed;
+        }
+      }
+    }
+
+    this.handleQueuedActions();
+    return this;
+
+    /*
+    TODO: move to handleQueuedActions();
     // remove the tiles from the hand
     this.removeTilesFromHand(player, tileIds);
 
@@ -410,6 +503,7 @@ export class Game {
     this.setLatestTile(TileCore.voidId);
     this.setState(GameState.WaitingAction);
     return this;
+    */
   }
 
   /**
@@ -436,6 +530,34 @@ export class Game {
       throw new Error("tiles are not in your hand");
     }
 
+    // if decision is made, then ignore
+    if (
+      this.queuedActions.find(
+        (action) =>
+          action.player.position === player.position &&
+          action.status !== ActionResult.Waiting,
+      )
+    ) {
+      return this;
+    }
+
+    // update player's gang action => accepting, update player's other actions => passed
+    for (const action of this.queuedActions) {
+      if (action.player.position === player.position) {
+        if (action.type === ActionType.Gang) {
+          action.tiles = tileIds;
+          action.status = ActionResult.Accepting;
+        } else {
+          action.status = ActionResult.Passed;
+        }
+      }
+    }
+
+    this.handleQueuedActions();
+    return this;
+
+    /*
+    TODO: move to handleQueuedActions();
     // remove the tiles from the hand
     this.removeTilesFromHand(player, tileIds);
 
@@ -449,10 +571,14 @@ export class Game {
       ),
     );
 
-    this.setCurrentPlayer(this.getNextPlayer());
     this.setLatestTile(TileCore.voidId);
+    this.setState(GameState.WaitingPass);
+
+    this.pickReverse();
     this.setState(GameState.WaitingAction);
+
     return this;
+    */
   }
 
   /**
@@ -480,8 +606,36 @@ export class Game {
       throw new Error("you cannot hu");
     }
 
+    // if decision is made, then ignore
+    if (
+      this.queuedActions.find(
+        (action) =>
+          action.player.position === player.position &&
+          action.status !== ActionResult.Waiting,
+      )
+    ) {
+      return this;
+    }
+
+    // update player's hu action => accepting, update player's other actions => passed
+    for (const action of this.queuedActions) {
+      if (action.player.position === player.position) {
+        if (action.type === ActionType.Hu) {
+          action.status = ActionResult.Accepting;
+        } else {
+          action.status = ActionResult.Passed;
+        }
+      }
+    }
+
+    this.handleQueuedActions();
+    return this;
+
+    /*
+    TODO: move to handleQueuedActions();
     this.setState(GameState.End);
     return this;
+    */
   }
 
   /**
@@ -493,6 +647,88 @@ export class Game {
   }
 
   /**
+   * prepare the queue actions
+   */
+  private prepareQueueActions(): this {
+    if (this.state !== GameState.WaitingPass) {
+      throw new Error(
+        "Queue actions can only be prepared in WaitingPass state",
+      );
+    }
+
+    /**
+     * add action results to the queuedActions
+     * + add hu actions
+     *   + loop other players and add hu-action to the queue if the player can hu
+     * + add peng/gang actions
+     *  + loop other players and add peng/gang-action to the queue if the player can peng/gang
+     * + add chi action
+     *  + try the next player and add chi-action to the queue if the player can chi
+     */
+
+    // hu actions
+    for (
+      let player = this.getNextPlayer();
+      player !== this.current;
+      player = this.getNextPlayer(player)
+    ) {
+      if (this.canHu(player.handTiles.slice())) {
+        this.queuedActions.push(new ActionDetail(ActionType.Hu, player));
+      }
+    }
+
+    // peng/gang actions
+    for (
+      let player = this.getNextPlayer();
+      player !== this.current;
+      player = this.getNextPlayer(player)
+    ) {
+      const sameTileCount = player.handTiles.reduce(
+        (count, tile) =>
+          TileCore.isSame(tile, this.latestTile) ? count + 1 : count,
+        0,
+      );
+      if (sameTileCount == 2) {
+        this.queuedActions.push(new ActionDetail(ActionType.Peng, player));
+      } else if (sameTileCount == 3) {
+        this.queuedActions.push(new ActionDetail(ActionType.Gang, player));
+      }
+    }
+
+    // chi action
+    const player = this.getNextPlayer();
+    // there are other player(s)
+    if (player !== this.current) {
+      const filteredTiles = [];
+      let previousTile = TileCore.voidId;
+      for (const tile of player.handTiles) {
+        if (
+          !TileCore.isSame(tile, this.latestTile) &&
+          !TileCore.isSame(tile, previousTile)
+        ) {
+          filteredTiles.push(tile);
+        }
+        previousTile = tile;
+      }
+
+      for (let i = 0; i < filteredTiles.length - 1; i++) {
+        if (
+          TileCore.isConsecutive(
+            filteredTiles[i],
+            filteredTiles[i + 1],
+            this.latestTile,
+          )
+        ) {
+          this.queuedActions.push(new ActionDetail(ActionType.Chi, player));
+          break;
+        }
+      }
+    }
+
+    return this;
+  }
+
+  /**
    * Handles the scenario where all players have passed their turn.
    * If all players have passed, it performs the following actions:
    * - Sets the current player to the next player.
@@ -500,13 +736,85 @@ export class Game {
    * - Sets the latest tile to a void ID.
    * - Updates the game state to `WaitingAction`.
    */
-  private handlePassedPlayers() {
-    if (this.allPassed()) {
+  private handleQueuedActions(): this {
+    if (this.queuedActions.length === 0) {
       this.setCurrentPlayer(this.getNextPlayer());
       this.pick();
       this.setLatestTile(TileCore.voidId);
       this.setState(GameState.WaitingAction);
+      return this;
     }
+
+    // from high priority to low priority
+    for (const action of this.queuedActions) {
+      // if passed
+      if (action.status === ActionResult.Passed) {
+        continue;
+      }
+
+      // if waiting
+      if (action.status === ActionResult.Waiting) {
+        return this;
+      }
+
+      if (action.type === ActionType.Chi || action.type === ActionType.Peng) {
+        action.status = ActionResult.Accepted;
+
+        // remove the tiles from the hand
+        this.removeTilesFromHand(action.player, action.tiles);
+
+        // add to opened sets
+        action.player.openedSets.push(
+          new OpenedSet(
+            [...action.tiles, this.latestTile] as OpenedSet["tiles"],
+            this.latestTile,
+            action.type,
+            action.player.position,
+          ),
+        );
+
+        this.queuedActions = [];
+        this.setCurrentPlayer(action.player);
+        this.setLatestTile(TileCore.voidId);
+        this.setState(GameState.WaitingAction);
+
+        return this;
+      }
+
+      if (action.type === ActionType.Gang) {
+        action.status = ActionResult.Accepted;
+
+        // remove the tiles from the hand
+        this.removeTilesFromHand(action.player, action.tiles);
+
+        // add to opened sets
+        action.player.openedSets.push(
+          new OpenedSet(
+            [...action.tiles, this.latestTile] as OpenedSet["tiles"],
+            this.latestTile,
+            action.type,
+            action.player.position,
+          ),
+        );
+
+        this.queuedActions = [];
+        this.setCurrentPlayer(action.player);
+        this.setLatestTile(TileCore.voidId);
+        this.setState(GameState.WaitingPass);
+        this.pickReverse();
+        this.setState(GameState.WaitingAction);
+
+        return this;
+      }
+    }
+
+    // all passed
+    this.setCurrentPlayer(this.getNextPlayer());
+    this.pick();
+    this.setLatestTile(TileCore.voidId);
+    this.setState(GameState.WaitingAction);
+
+    return this;
   }
 
   /**
@@ -798,9 +1106,8 @@ export class Game {
   }
 
   allPassed() {
-    return (
-      this.passedPlayers.length ===
-      this.players.filter((player) => player).length - 1
+    return this.queuedActions.every(
+      (action) => action.status === ActionResult.Passed,
     );
   }
 
@@ -934,6 +1241,30 @@ export class Game {
    */
 
   public toJSON() {
+    const passedPlayers = this.players.filter(
+      (player) =>
+        player &&
+        !this.queuedActions.every(
+          (action) =>
+            action.player.position !== player.position ||
+            action.status === ActionResult.Passed,
+        ),
+    ) as Player[];
+
+    for (
+      let player = this.getNextPlayer();
+      player !== this.current;
+      player = this.getNextPlayer(player)
+    ) {
+      // if the first queue action is not waiting, then the player is passed (acted!)
+      if (
+        this.queuedActions.find((action) => action.player === player)
+          ?.status !== ActionResult.Waiting
+      ) {
+        this.passedPlayers.push(player);
+      }
+    }
+
     return {
       players: this.players,
       walls: this.walls,
@@ -946,7 +1277,7 @@ export class Game {
       pickIndex: this.pickIndex,
       reversePickPosition: this.reversePickPosition,
       reversePickIndex: this.reversePickIndex,
-      passedPlayers: this.passedPlayers.map((player) => player.position),
+      passedPlayers,
     };
   }
 
