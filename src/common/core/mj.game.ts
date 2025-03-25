@@ -453,6 +453,7 @@ export class Game {
           action.type === ActionType.Gang
         ) {
           action.tiles = tileIds;
+          action.type = ActionType.Peng; // change queue action to peng
           action.status = ActionResult.Accepting;
         } else {
           action.status = ActionResult.Passed;
@@ -1061,10 +1062,6 @@ export class Game {
       throw new Error("current player is not set");
     }
 
-    if (!this.allPassed()) {
-      throw new Error("Pick can only be done when all players have passed");
-    }
-
     if (this.current.picked !== TileCore.voidId) {
       throw new Error("you have already picked a tile");
     }
@@ -1089,12 +1086,6 @@ export class Game {
 
     this.current.picked = this.pickTile(true);
     return this;
-  }
-
-  allPassed() {
-    return this.queuedActions.every(
-      (action) => action.status === ActionResult.Passed,
-    );
   }
 
   canHu(tiles: TileId[]): boolean {
