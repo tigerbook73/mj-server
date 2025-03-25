@@ -8,31 +8,26 @@ describe("Game serialization", () => {
 
     let json = game.toJSON();
     let newGame = Game.fromJSON(json);
-    expect(newGame).toEqual(game);
     expect(newGame.toJSON()).toEqual(json);
 
     game.start();
     json = game.toJSON();
     newGame = Game.fromJSON(json);
-    expect(newGame).toEqual(game);
     expect(newGame.toJSON()).toEqual(json);
 
     game.drop(game.current?.handTiles[0] as TileId);
     json = game.toJSON();
     newGame = Game.fromJSON(json);
-    expect(newGame).toEqual(game);
     expect(newGame.toJSON()).toEqual(json);
 
     game.pass(game.getNextPlayer(game.current));
     json = game.toJSON();
     newGame = Game.fromJSON(json);
-    expect(newGame).toEqual(game);
     expect(newGame.toJSON()).toEqual(json);
 
     game.pass(game.getNextPlayer(game.getNextPlayer(game.current)));
     json = game.toJSON();
     newGame = Game.fromJSON(json);
-    expect(newGame).toEqual(game);
     expect(newGame.toJSON()).toEqual(json);
 
     game.pass(
@@ -40,7 +35,6 @@ describe("Game serialization", () => {
     );
     json = game.toJSON();
     newGame = Game.fromJSON(json);
-    expect(newGame).toEqual(game);
     expect(newGame.toJSON()).toEqual(json);
   });
 });

@@ -1218,27 +1218,21 @@ export class Game {
    */
 
   public toJSON() {
-    const passedPlayers = this.players.filter(
-      (player) =>
-        player &&
-        !this.queuedActions.every(
-          (action) =>
-            action.player.position !== player.position ||
-            action.status === ActionResult.Passed,
-        ),
-    ) as Player[];
-
-    for (
-      let player = this.getNextPlayer();
-      player !== this.current;
-      player = this.getNextPlayer(player)
-    ) {
-      // if the first queue action is not waiting, then the player is passed (acted!)
-      if (
-        this.queuedActions.find((action) => action.player === player)
-          ?.status !== ActionResult.Waiting
+    // prepare passed players
+    const passedPlayers: Player[] = [];
+    if (this.state === GameState.WaitingPass) {
+      for (
+        let player = this.current ? this.getNextPlayer() : this.current;
+        player !== this.current;
+        player = this.getNextPlayer(player)
       ) {
-        this.passedPlayers.push(player);
+        // if the first queue action is not waiting, then the player is passed (acted!)
+        if (
+          this.queuedActions.find((action) => action.player === player)
+            ?.status !== ActionResult.Waiting
+        ) {
+          passedPlayers.push(player!);
+        }
       }
     }
 
@@ -1254,7 +1248,7 @@ export class Game {
       pickIndex: this.pickIndex,
       reversePickPosition: this.reversePickPosition,
       reversePickIndex: this.reversePickIndex,
-      passedPlayers,
+      passedPlayers: passedPlayers.map((player) => player.position),
     };
   }
 
