@@ -805,72 +805,54 @@ export class Game {
   }
 
   canHu(tiles: TileId[]): boolean {
-    /**
-     * 0. sort tiles
-     * 1. loop the tiles and all possible pairs
-     * 2. for each pairs
-     *  a) copy the original tiles and remove the pair
-     *  b) check if the rest tiles can be 3 tiles group
-     */
-
-    // only consider the hand tiles
-    // if (tiles.length !== 14) {
-    //   return false;
-    // }
-
     // sort tiles
     TileCore.sortTiles(tiles);
 
     for (let i = 0; i < tiles.length - 1; i++) {
-      if (TileCore.isSame(tiles[i], tiles[i + 1])) {
-        const rest = tiles.slice(i, 2);
+      // try all pairs from start
+      if (!TileCore.isSame(tiles[i], tiles[i + 1])) {
+        continue;
+      }
+      const result: Array<[TileId, TileId] | [TileId, TileId, TileId]> = [
+        [tiles[i], tiles[i + 1]],
+      ];
+      const rest = tiles.slice(i, 2);
 
-        const result: [TileId, TileId, TileId][] = [];
-
-        while (rest.length >= 3) {
-          if (TileCore.isSame(rest[0], rest[1], rest[2])) {
-            result.push([rest[0], rest[1], rest[2]]);
-            rest.splice(0, 3);
-            continue;
-          }
-
-          const t1 = 0;
-          let t2 = 0;
-          let t3 = 0;
-
-          // find a consecutive tiles for t1
-          for (let j = t1 + 1; j < rest.length - 1; j++) {
-            if (TileCore.isConsecutive(rest[t1], rest[j])) {
-              t2 = j;
-              break;
-            }
-          }
-          if (!t2) {
-            break;
-          }
-
-          // find a consecutive tiles for t2
-          for (let j = t2 + 1; j < rest.length; j++) {
-            if (TileCore.isConsecutive(rest[t2], rest[j])) {
-              t3 = j;
-              break;
-            }
-          }
-          if (!t3) {
-            break;
-          }
-
-          result.push([rest[t1], rest[t2], rest[t3]]);
-          rest.splice(t3, 1);
-          rest.splice(t2, 1);
-          rest.splice(t1, 1);
+      while (rest.length >= 3) {
+        // try the same 3 tiles
+        if (TileCore.isSame(rest[0], rest[1], rest[2])) {
+          result.push([rest[0], rest[1], rest[2]]);
+          rest.splice(0, 3);
+          continue;
         }
 
-        return rest.length === 0;
+        // try the consecutive 3 tiles
+        const t1 = 0;
+        const t2 = rest.findIndex((tile) =>
+          TileCore.isConsecutive(rest[t1], tile),
+        );
+        if (t2 < 0) {
+          break; // no consecutive tiles
+        }
+        const t3 = rest.findIndex((tile) =>
+          TileCore.isConsecutive(rest[t1], rest[t2], tile),
+        );
+        if (t3 < 0) {
+          break; // no consecutive tiles
+        }
+
+        result.push([rest[t1], rest[t2], rest[t3]]);
+        rest.splice(t3, 1);
+        rest.splice(t2, 1);
+        rest.splice(t1, 1);
+      }
+
+      if (rest.length === 0) {
+        return true;
       }
     }
 
-    return true;
+    return false;
   }
 
   extractAllPaires(tiles: TileId[]) {
