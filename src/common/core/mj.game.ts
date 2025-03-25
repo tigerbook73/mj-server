@@ -50,7 +50,9 @@ export class OpenedSet {
     public target: TileId, // 碰，吃，杠的目标牌
     public actionType: ActionType,
     public from: Position, // 来自哪个玩家
-  ) {}
+  ) {
+    this.tiles = tiles.sort();
+  }
 
   static fromJSON(data: any): OpenedSet {
     return new OpenedSet(
@@ -144,7 +146,7 @@ export class Game {
   public reversePickPosition: Position = Position.East; // 反向摸牌位置（东南西北）(杠)
   public reversePickIndex: number = 0; // 反向摸牌位置
 
-  public passedPlayers: Player[] = []; // 已经过的玩家，该属性仅用户client side
+  public passedPlayers: Player[] = []; // 已经过的玩家，该属性仅用于client side
   private queuedActions: ActionDetail[] = []; // 等待处理的动作，该属性不用于Client Side
 
   constructor() {
@@ -246,6 +248,7 @@ export class Game {
     this.setState(GameState.WaitingPass);
     this.prepareQueueActions();
 
+    // need a timeout
     this.handleQueuedActions();
 
     return this;
@@ -291,8 +294,6 @@ export class Game {
 
     this.pickReverse();
     this.setState(GameState.WaitingAction);
-
-    this.handleQueuedActions();
   }
 
   /**
@@ -353,8 +354,8 @@ export class Game {
         action.status = ActionResult.Passed;
       }
     }
-    this.handleQueuedActions();
 
+    this.handleQueuedActions();
     return this;
   }
 
@@ -406,29 +407,7 @@ export class Game {
     }
 
     this.handleQueuedActions();
-
     return this;
-
-    /*
-    TODO: move to handleQueuedActions();
-    // remove the tiles from the hand
-    this.removeTilesFromHand(player, tileIds);
-
-    // add to opened sets
-    player.openedSets.push(
-      new OpenedSet(
-        [tileIds[0], tileIds[1], this.latestTile],
-        this.latestTile,
-        ActionType.Chi,
-        this.current.position,
-      ),
-    );
-
-    this.setCurrentPlayer(this.getNextPlayer());
-    this.setLatestTile(TileCore.voidId);
-    this.setState(GameState.WaitingAction);
-    return this;
-    */
   }
 
   /**
@@ -620,22 +599,15 @@ export class Game {
     // update player's hu action => accepting, update player's other actions => passed
     for (const action of this.queuedActions) {
       if (action.player.position === player.position) {
-        if (action.type === ActionType.Hu) {
-          action.status = ActionResult.Accepting;
-        } else {
-          action.status = ActionResult.Passed;
-        }
+        action.status =
+          action.type === ActionType.Hu
+            ? ActionResult.Accepting
+            : ActionResult.Passed;
       }
     }
 
     this.handleQueuedActions();
     return this;
-
-    /*
-    TODO: move to handleQueuedActions();
-    this.setState(GameState.End);
-    return this;
-    */
   }
 
   /**
@@ -656,14 +628,13 @@ export class Game {
       );
     }
 
+    this.queuedActions = [];
+
     /**
-     * add action results to the queuedActions
+     * add possible action results to the queuedActions (from high priority to low priority)
      * + add hu actions
-     *   + loop other players and add hu-action to the queue if the player can hu
      * + add peng/gang actions
-     *  + loop other players and add peng/gang-action to the queue if the player can peng/gang
      * + add chi action
-     *  + try the next player and add chi-action to the queue if the player can chi
      */
 
     // hu actions
@@ -672,7 +643,7 @@ export class Game {
       player !== this.current;
       player = this.getNextPlayer(player)
     ) {
-      if (this.canHu(player.handTiles.slice())) {
+      if (this.canHu([...player.handTiles, this.latestTile])) {
         this.queuedActions.push(new ActionDetail(ActionType.Hu, player));
       }
     }
@@ -683,11 +654,9 @@ export class Game {
       player !== this.current;
       player = this.getNextPlayer(player)
     ) {
-      const sameTileCount = player.handTiles.reduce(
-        (count, tile) =>
-          TileCore.isSame(tile, this.latestTile) ? count + 1 : count,
-        0,
-      );
+      const sameTileCount = player.handTiles.filter((tile) =>
+        TileCore.isSame(tile, this.latestTile),
+      ).length;
       if (sameTileCount == 2) {
         this.queuedActions.push(new ActionDetail(ActionType.Peng, player));
       } else if (sameTileCount == 3) {
@@ -697,9 +666,8 @@ export class Game {
 
     // chi action
     const player = this.getNextPlayer();
-    // there are other player(s)
     if (player !== this.current) {
-      const filteredTiles = [];
+      const filteredTiles = []; // tiles list that does not contain the latest tile and duplicate tiles
       let previousTile = TileCore.voidId;
       for (const tile of player.handTiles) {
         if (
@@ -745,19 +713,28 @@ export class Game {
       return this;
     }
 
+    if (![GameState.WaitingPass].includes(this.state)) {
+      throw new Error(
+        "Queued actions can only be handled in WaitingPass state",
+      );
+    }
+
     // from high priority to low priority
     for (const action of this.queuedActions) {
-      // if passed
+      // if passed, skip
       if (action.status === ActionResult.Passed) {
         continue;
       }
 
-      // if waiting
+      // if waiting, nothing to be handdled
       if (action.status === ActionResult.Waiting) {
         return this;
       }
 
+      // then handle the current action: chi/peng/gang/hu
+
       if (action.type === ActionType.Chi || action.type === ActionType.Peng) {
+        // update state
         action.status = ActionResult.Accepted;
 
         // remove the tiles from the hand
@@ -773,9 +750,12 @@ export class Game {
           ),
         );
 
+        // clear queued actions and the latest tile
         this.queuedActions = [];
-        this.setCurrentPlayer(action.player);
         this.setLatestTile(TileCore.voidId);
+
+        // update the current player
+        this.setCurrentPlayer(action.player);
         this.setState(GameState.WaitingAction);
 
         return this;
@@ -797,10 +777,12 @@ export class Game {
           ),
         );
 
+        // clear queued actions and the latest tile
         this.queuedActions = [];
-        this.setCurrentPlayer(action.player);
         this.setLatestTile(TileCore.voidId);
-        this.setState(GameState.WaitingPass);
+
+        // update the current player and pick a tile from the reverse side
+        this.setCurrentPlayer(action.player);
         this.pickReverse();
         this.setState(GameState.WaitingAction);
 
@@ -808,10 +790,14 @@ export class Game {
       }
     }
 
-    // all passed
+    // no actions queued or all passed
+
+    // clear queued actions and the latest tile
+    this.queuedActions = [];
+    this.setLatestTile(TileCore.voidId);
+
     this.setCurrentPlayer(this.getNextPlayer());
     this.pick();
-    this.setLatestTile(TileCore.voidId);
     this.setState(GameState.WaitingAction);
 
     return this;
