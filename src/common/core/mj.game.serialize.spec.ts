@@ -1,4 +1,4 @@
-import { Game, Position } from "./mj.game";
+import { Game, GameState, Position } from "./mj.game";
 import { TileId } from "./mj.tile-core";
 
 describe("Game serialization", () => {
@@ -7,34 +7,34 @@ describe("Game serialization", () => {
     game.init([Position.East, Position.South, Position.West, Position.North]);
 
     let json = game.toJSON();
-    let newGame = Game.fromJSON(json);
-    expect(newGame.toJSON()).toEqual(json);
+    json.passedPlayers = [];
+    let jsonNew = Game.fromJSON(json).toJSON();
+    jsonNew.passedPlayers = [];
+    expect(jsonNew).toEqual(json);
 
     game.start();
     json = game.toJSON();
-    newGame = Game.fromJSON(json);
-    expect(newGame.toJSON()).toEqual(json);
+    json.passedPlayers = [];
+    jsonNew = Game.fromJSON(json).toJSON();
+    jsonNew.passedPlayers = [];
+    expect(jsonNew).toEqual(json);
 
     game.drop(game.current?.handTiles[0] as TileId);
     json = game.toJSON();
-    newGame = Game.fromJSON(json);
-    expect(newGame.toJSON()).toEqual(json);
+    json.passedPlayers = [];
+    jsonNew = Game.fromJSON(json).toJSON();
+    jsonNew.passedPlayers = [];
+    expect(jsonNew).toEqual(json);
 
-    game.pass(game.getNextPlayer(game.current));
-    json = game.toJSON();
-    newGame = Game.fromJSON(json);
-    expect(newGame.toJSON()).toEqual(json);
-
-    game.pass(game.getNextPlayer(game.getNextPlayer(game.current)));
-    json = game.toJSON();
-    newGame = Game.fromJSON(json);
-    expect(newGame.toJSON()).toEqual(json);
-
-    game.pass(
-      game.getNextPlayer(game.getNextPlayer(game.getNextPlayer(game.current))),
-    );
-    json = game.toJSON();
-    newGame = Game.fromJSON(json);
-    expect(newGame.toJSON()).toEqual(json);
+    // pass all players
+    while (game.state === GameState.WaitingPass) {
+      const next = game.getNextPlayer(game.current);
+      game.pass(next);
+      json = game.toJSON();
+      json.passedPlayers = [];
+      jsonNew = Game.fromJSON(json).toJSON();
+      jsonNew.passedPlayers = [];
+      expect(jsonNew).toEqual(json);
+    }
   });
 });

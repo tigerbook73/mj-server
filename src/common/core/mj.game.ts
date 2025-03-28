@@ -1097,10 +1097,10 @@ export class Game {
       if (!TileCore.isSame(tiles[i], tiles[i + 1])) {
         continue;
       }
+      const rest = tiles.slice();
       const result: Array<[TileId, TileId] | [TileId, TileId, TileId]> = [
-        [tiles[i], tiles[i + 1]],
+        rest.splice(i, 2) as [TileId, TileId],
       ];
-      const rest = tiles.slice(i, 2);
 
       while (rest.length >= 3) {
         // try the same 3 tiles
