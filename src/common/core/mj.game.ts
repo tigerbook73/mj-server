@@ -147,7 +147,7 @@ export class Game {
   public reversePickIndex: number = 0; // 反向摸牌位置
 
   public passedPlayers: Player[] = []; // 已经过的玩家，该属性仅用于client side
-  private queuedActions: ActionDetail[] = []; // 等待处理的动作，该属性不用于Client Side
+  public queuedActions: ActionDetail[] = []; // 等待处理的动作，该属性不用于Client Side
 
   constructor() {
     //

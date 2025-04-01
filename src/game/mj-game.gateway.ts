@@ -65,6 +65,7 @@ import { GameService } from "./game.service";
 import { AuthService } from "./auth.service";
 import { ClientModel } from "src/common/models/client.model";
 import { Game, Player } from "src/common/core/mj.game";
+import { Interval } from "@nestjs/schedule";
 
 type RequestHandler = {
   update: boolean;
@@ -594,6 +595,24 @@ export class MjGameGateway
       status: "success",
       data: game,
     };
+  }
+
+  @Interval(2000)
+  autoPlay(): void {
+    let action = false;
+    for (const room of this.roomService.findAll()) {
+      action = this.gameService.autoPlayOneStep(room) || action;
+    }
+
+    if (action) {
+      this.server.emit("mj:game", {
+        type: GameEventType.GAME_UPDATED,
+        data: {
+          clients: this.clientService.findAll(),
+          rooms: this.roomService.findAll(),
+        },
+      });
+    }
   }
 
   validateGamePlayer(client: ClientModel): { game: Game; player: Player } {

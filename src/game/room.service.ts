@@ -191,7 +191,7 @@ export class RoomService {
     }
 
     const positions = room.players
-      .filter((player) => player.type === UserType.Human)
+      // .filter((player) => player.type === UserType.Human)
       .map((player) => player.position);
 
     // create game
