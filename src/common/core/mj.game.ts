@@ -463,27 +463,6 @@ export class Game {
 
     this.handleQueuedActions();
     return this;
-
-    /*
-    TODO: move to handleQueuedActions();
-    // remove the tiles from the hand
-    this.removeTilesFromHand(player, tileIds);
-
-    // add to opened sets
-    player.openedSets.push(
-      new OpenedSet(
-        [tileIds[0], tileIds[1], this.latestTile],
-        this.latestTile,
-        ActionType.Peng,
-        this.current.position,
-      ),
-    );
-
-    this.setCurrentPlayer(this.getNextPlayer());
-    this.setLatestTile(TileCore.voidId);
-    this.setState(GameState.WaitingAction);
-    return this;
-    */
   }
 
   /**
@@ -535,30 +514,6 @@ export class Game {
 
     this.handleQueuedActions();
     return this;
-
-    /*
-    TODO: move to handleQueuedActions();
-    // remove the tiles from the hand
-    this.removeTilesFromHand(player, tileIds);
-
-    // add to opened sets
-    player.openedSets.push(
-      new OpenedSet(
-        [tileIds[0], tileIds[1], tileIds[2], this.latestTile],
-        this.latestTile,
-        ActionType.Gang,
-        this.current.position,
-      ),
-    );
-
-    this.setLatestTile(TileCore.voidId);
-    this.setState(GameState.WaitingPass);
-
-    this.pickReverse();
-    this.setState(GameState.WaitingAction);
-
-    return this;
-    */
   }
 
   /**
