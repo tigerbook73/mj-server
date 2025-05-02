@@ -1,5 +1,5 @@
 import { Game, Player, Position } from "../core/mj.game";
-import { TileId } from "../core/mj.tile-core";
+import { type TileId } from "../core/mj.tile-core";
 import { ClientModel } from "../models/client.model";
 import { PlayerModel } from "../models/player.model";
 import { RoomCreateDto, RoomModel } from "../models/room.model";

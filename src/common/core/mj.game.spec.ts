@@ -1,5 +1,5 @@
 import { Game, Position, GameState } from "./mj.game";
-import { TileCore, TileId } from "./mj.tile-core";
+import { TileCore, type TileId } from "./mj.tile-core";
 
 describe("Game Play", () => {
   let game: Game;

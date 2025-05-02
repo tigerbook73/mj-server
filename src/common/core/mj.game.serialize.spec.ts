@@ -1,5 +1,5 @@
 import { Game, GameState, Position } from "./mj.game";
-import { TileId } from "./mj.tile-core";
+import { type TileId } from "./mj.tile-core";
 
 describe("Game serialization", () => {
   it("should serialize and deserialize the game state correctly", () => {
