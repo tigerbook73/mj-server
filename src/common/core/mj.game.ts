@@ -825,11 +825,11 @@ export class Game {
     }
 
     let pos = player.position as Position;
-    const direction = 1;
-    while (!this.players[(pos + direction) % 4]) {
+    const direction = -1;
+    while (!this.players[(pos + direction + 4) % 4]) {
       pos += direction;
     }
-    return this.players[(pos + direction) % 4] as Player;
+    return this.players[(pos + direction + 4) % 4] as Player;
   }
 
   /**
@@ -961,7 +961,7 @@ export class Game {
       let position = this.dealer.position;
       for (let j = 0; j < 4; j++) {
         const player = this.players[position];
-        position = (position + 1) % 4;
+        position = (position - 1 + 4) % 4;
         if (player) {
           player.handTiles.push(this.pickTile());
           player.handTiles.push(this.pickTile());
@@ -976,7 +976,7 @@ export class Game {
       let position = this.dealer.position;
       for (let j = 0; j < 4; j++) {
         const player = this.players[position];
-        position = (position + 1) % 4;
+        position = (position - 1 + 4) % 4;
         if (player) {
           player.handTiles.push(this.pickTile());
         }
