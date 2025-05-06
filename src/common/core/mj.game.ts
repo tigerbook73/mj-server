@@ -308,10 +308,7 @@ export class Game {
       throw new Error("current player is not set");
     }
 
-    const tileIds = this.current.handTiles.slice();
-    tileIds.push(this.current.picked);
-
-    if (!this.canHu(tileIds)) {
+    if (!TileCore.canHu(this.current.handTiles, this.current.picked)) {
       throw new Error("you cannot hu");
     }
 
@@ -528,16 +525,12 @@ export class Game {
       throw new Error("current player is not set");
     }
 
-    const tileIds = player.handTiles.slice();
-    if (player.picked !== TileCore.voidId) {
-      tileIds.push(player.picked);
-    }
-
-    if (this.latestTile !== TileCore.voidId) {
-      tileIds.push(this.latestTile);
-    }
-
-    if (!this.canHu(tileIds)) {
+    if (
+      !TileCore.canHu(
+        player.handTiles,
+        player.picked !== TileCore.voidId ? player.picked : this.latestTile,
+      )
+    ) {
       throw new Error("you cannot hu");
     }
 
@@ -599,7 +592,7 @@ export class Game {
       player !== this.current;
       player = this.getNextPlayer(player)
     ) {
-      if (this.canHu([...player.handTiles, this.latestTile])) {
+      if (TileCore.canHu(player.handTiles, this.latestTile)) {
         this.queuedActions.push(new ActionDetail(ActionType.Hu, player));
       }
     }
@@ -1041,57 +1034,6 @@ export class Game {
 
     this.current.picked = this.pickTile(true);
     return this;
-  }
-
-  canHu(tiles: TileId[]): boolean {
-    // sort tiles
-    TileCore.sortTiles(tiles);
-
-    for (let i = 0; i < tiles.length - 1; i++) {
-      // try all pairs from start
-      if (!TileCore.isSame(tiles[i], tiles[i + 1])) {
-        continue;
-      }
-      const rest = tiles.slice();
-      const result: Array<[TileId, TileId] | [TileId, TileId, TileId]> = [
-        rest.splice(i, 2) as [TileId, TileId],
-      ];
-
-      while (rest.length >= 3) {
-        // try the same 3 tiles
-        if (TileCore.isSame(rest[0], rest[1], rest[2])) {
-          result.push([rest[0], rest[1], rest[2]]);
-          rest.splice(0, 3);
-          continue;
-        }
-
-        // try the consecutive 3 tiles
-        const t1 = 0;
-        const t2 = rest.findIndex((tile) =>
-          TileCore.isConsecutive(rest[t1], tile),
-        );
-        if (t2 < 0) {
-          break; // no consecutive tiles
-        }
-        const t3 = rest.findIndex((tile) =>
-          TileCore.isConsecutive(rest[t1], rest[t2], tile),
-        );
-        if (t3 < 0) {
-          break; // no consecutive tiles
-        }
-
-        result.push([rest[t1], rest[t2], rest[t3]]);
-        rest.splice(t3, 1);
-        rest.splice(t2, 1);
-        rest.splice(t1, 1);
-      }
-
-      if (rest.length === 0) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   extractAllPaires(tiles: TileId[]) {
