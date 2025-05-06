@@ -597,7 +597,7 @@ export class MjGameGateway
     };
   }
 
-  @Interval(2000)
+  @Interval(1500)
   autoPlay(): void {
     let action = false;
     for (const room of this.roomService.findAll()) {

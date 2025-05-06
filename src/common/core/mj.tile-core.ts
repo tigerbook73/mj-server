@@ -338,6 +338,37 @@ export class TileCore {
     return false;
   }
 
+  static canPeng(handTiles: readonly TileId[], target: TileId): boolean {
+    return handTiles.filter((t) => TileCore.isSame(t, target)).length >= 2;
+  }
+
+  static canGang(handTiles: readonly TileId[], target: TileId): boolean {
+    return handTiles.filter((t) => TileCore.isSame(t, target)).length >= 3;
+  }
+
+  static canChi(handTiles: readonly TileId[], target: TileId): boolean {
+    const filteredTiles = []; // tiles list that does not contain the latest tile and duplicate tiles
+    let previousTile = TileCore.voidId;
+    for (const tile of handTiles) {
+      if (
+        !TileCore.isSame(tile, target) &&
+        !TileCore.isSame(tile, previousTile)
+      ) {
+        filteredTiles.push(tile);
+      }
+      previousTile = tile;
+    }
+
+    for (let i = 0; i < filteredTiles.length - 1; i++) {
+      if (
+        TileCore.isConsecutive(filteredTiles[i], filteredTiles[i + 1], target)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   isWan() {
     return this.type === TileType.WAN;
   }

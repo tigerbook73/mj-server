@@ -603,42 +603,18 @@ export class Game {
       player !== this.current;
       player = this.getNextPlayer(player)
     ) {
-      const sameTileCount = player.handTiles.filter((tile) =>
-        TileCore.isSame(tile, this.latestTile),
-      ).length;
-      if (sameTileCount == 2) {
-        this.queuedActions.push(new ActionDetail(ActionType.Peng, player));
-      } else if (sameTileCount == 3) {
+      if (TileCore.canGang(player.handTiles, this.latestTile)) {
         this.queuedActions.push(new ActionDetail(ActionType.Gang, player));
+      } else if (TileCore.canPeng(player.handTiles, this.latestTile)) {
+        this.queuedActions.push(new ActionDetail(ActionType.Peng, player));
       }
     }
 
     // chi action
     const player = this.getNextPlayer();
     if (player !== this.current) {
-      const filteredTiles = []; // tiles list that does not contain the latest tile and duplicate tiles
-      let previousTile = TileCore.voidId;
-      for (const tile of player.handTiles) {
-        if (
-          !TileCore.isSame(tile, this.latestTile) &&
-          !TileCore.isSame(tile, previousTile)
-        ) {
-          filteredTiles.push(tile);
-        }
-        previousTile = tile;
-      }
-
-      for (let i = 0; i < filteredTiles.length - 1; i++) {
-        if (
-          TileCore.isConsecutive(
-            filteredTiles[i],
-            filteredTiles[i + 1],
-            this.latestTile,
-          )
-        ) {
-          this.queuedActions.push(new ActionDetail(ActionType.Chi, player));
-          break;
-        }
+      if (TileCore.canChi(player.handTiles, this.latestTile)) {
+        this.queuedActions.push(new ActionDetail(ActionType.Chi, player));
       }
     }
 
