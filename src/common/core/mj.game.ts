@@ -410,7 +410,7 @@ export class Game {
   /**
    * 碰, 碰完后进入 WaitingAction 状态
    */
-  public peng(tileIds: [TileId, TileId]) {
+  public peng(player: Player, tileIds: [TileId, TileId]) {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Peng can only be done in WaitingPass state");
     }
@@ -418,8 +418,6 @@ export class Game {
     if (!this.current) {
       throw new Error("current player is not set");
     }
-
-    const player = this.getNextPlayer();
 
     // check if the tiles are consecutive
     if (!TileCore.isSame(tileIds[0], tileIds[1], this.latestTile)) {
@@ -465,7 +463,7 @@ export class Game {
   /**
    * 杠, 杠完后进入 WaitingAction 状态
    */
-  public gang(tileIds: [TileId, TileId, TileId]) {
+  public gang(player: Player, tileIds: [TileId, TileId, TileId]) {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Gang can only be done in WaitingPass state");
     }
@@ -473,8 +471,6 @@ export class Game {
     if (!this.current) {
       throw new Error("current player is not set");
     }
-
-    const player = this.getNextPlayer();
 
     // check if the tiles are consecutive
     if (!TileCore.isSame(tileIds[0], tileIds[1], tileIds[2], this.latestTile)) {

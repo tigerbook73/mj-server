@@ -92,7 +92,7 @@ export class GameService {
       throw new Error("Player is the current player or not in current game");
     }
 
-    game.peng(tileIds);
+    game.peng(player, tileIds);
     return game;
   }
 
@@ -106,7 +106,7 @@ export class GameService {
       throw new Error("Player is the current player or not in current game");
     }
 
-    game.gang(tileIds);
+    game.gang(player, tileIds);
     return game;
   }
 
