@@ -282,6 +282,93 @@ export class TileCore {
     );
   }
 
+  static canHu(handTiles: readonly TileId[], tile = TileCore.voidId) {
+    const tiles = handTiles.slice();
+    if (tile !== TileCore.voidId) {
+      tiles.push(tile);
+    }
+
+    // sort tiles
+    TileCore.sortTiles(tiles);
+
+    for (let i = 0; i < tiles.length - 1; i++) {
+      // try all pairs from start
+      if (!TileCore.isSame(tiles[i], tiles[i + 1])) {
+        continue;
+      }
+      const rest = tiles.slice();
+      const result: Array<[TileId, TileId] | [TileId, TileId, TileId]> = [
+        rest.splice(i, 2) as [TileId, TileId],
+      ];
+
+      while (rest.length >= 3) {
+        // try the same 3 tiles
+        if (TileCore.isSame(rest[0], rest[1], rest[2])) {
+          result.push([rest[0], rest[1], rest[2]]);
+          rest.splice(0, 3);
+          continue;
+        }
+
+        // try the consecutive 3 tiles
+        const t1 = 0;
+        const t2 = rest.findIndex((tile) =>
+          TileCore.isConsecutive(rest[t1], tile),
+        );
+        if (t2 < 0) {
+          break; // no consecutive tiles
+        }
+        const t3 = rest.findIndex((tile) =>
+          TileCore.isConsecutive(rest[t1], rest[t2], tile),
+        );
+        if (t3 < 0) {
+          break; // no consecutive tiles
+        }
+
+        result.push([rest[t1], rest[t2], rest[t3]]);
+        rest.splice(t3, 1);
+        rest.splice(t2, 1);
+        rest.splice(t1, 1);
+      }
+
+      if (rest.length === 0) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  static canPeng(handTiles: readonly TileId[], target: TileId): boolean {
+    return handTiles.filter((t) => TileCore.isSame(t, target)).length >= 2;
+  }
+
+  static canGang(handTiles: readonly TileId[], target: TileId): boolean {
+    return handTiles.filter((t) => TileCore.isSame(t, target)).length >= 3;
+  }
+
+  static canChi(handTiles: readonly TileId[], target: TileId): boolean {
+    const filteredTiles = []; // tiles list that does not contain the latest tile and duplicate tiles
+    let previousTile = TileCore.voidId;
+    for (const tile of handTiles) {
+      if (
+        !TileCore.isSame(tile, target) &&
+        !TileCore.isSame(tile, previousTile)
+      ) {
+        filteredTiles.push(tile);
+      }
+      previousTile = tile;
+    }
+
+    for (let i = 0; i < filteredTiles.length - 1; i++) {
+      if (
+        TileCore.isConsecutive(filteredTiles[i], filteredTiles[i + 1], target)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   isWan() {
     return this.type === TileType.WAN;
   }

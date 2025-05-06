@@ -308,10 +308,7 @@ export class Game {
       throw new Error("current player is not set");
     }
 
-    const tileIds = this.current.handTiles.slice();
-    tileIds.push(this.current.picked);
-
-    if (!this.canHu(tileIds)) {
+    if (!TileCore.canHu(this.current.handTiles, this.current.picked)) {
       throw new Error("you cannot hu");
     }
 
@@ -413,7 +410,7 @@ export class Game {
   /**
    * 碰, 碰完后进入 WaitingAction 状态
    */
-  public peng(tileIds: [TileId, TileId]) {
+  public peng(player: Player, tileIds: [TileId, TileId]) {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Peng can only be done in WaitingPass state");
     }
@@ -421,8 +418,6 @@ export class Game {
     if (!this.current) {
       throw new Error("current player is not set");
     }
-
-    const player = this.getNextPlayer();
 
     // check if the tiles are consecutive
     if (!TileCore.isSame(tileIds[0], tileIds[1], this.latestTile)) {
@@ -468,7 +463,7 @@ export class Game {
   /**
    * 杠, 杠完后进入 WaitingAction 状态
    */
-  public gang(tileIds: [TileId, TileId, TileId]) {
+  public gang(player: Player, tileIds: [TileId, TileId, TileId]) {
     if (![GameState.WaitingPass].includes(this.state)) {
       throw new Error("Gang can only be done in WaitingPass state");
     }
@@ -476,8 +471,6 @@ export class Game {
     if (!this.current) {
       throw new Error("current player is not set");
     }
-
-    const player = this.getNextPlayer();
 
     // check if the tiles are consecutive
     if (!TileCore.isSame(tileIds[0], tileIds[1], tileIds[2], this.latestTile)) {
@@ -528,16 +521,12 @@ export class Game {
       throw new Error("current player is not set");
     }
 
-    const tileIds = player.handTiles.slice();
-    if (player.picked !== TileCore.voidId) {
-      tileIds.push(player.picked);
-    }
-
-    if (this.latestTile !== TileCore.voidId) {
-      tileIds.push(this.latestTile);
-    }
-
-    if (!this.canHu(tileIds)) {
+    if (
+      !TileCore.canHu(
+        player.handTiles,
+        player.picked !== TileCore.voidId ? player.picked : this.latestTile,
+      )
+    ) {
       throw new Error("you cannot hu");
     }
 
@@ -599,7 +588,7 @@ export class Game {
       player !== this.current;
       player = this.getNextPlayer(player)
     ) {
-      if (this.canHu([...player.handTiles, this.latestTile])) {
+      if (TileCore.canHu(player.handTiles, this.latestTile)) {
         this.queuedActions.push(new ActionDetail(ActionType.Hu, player));
       }
     }
@@ -610,42 +599,18 @@ export class Game {
       player !== this.current;
       player = this.getNextPlayer(player)
     ) {
-      const sameTileCount = player.handTiles.filter((tile) =>
-        TileCore.isSame(tile, this.latestTile),
-      ).length;
-      if (sameTileCount == 2) {
-        this.queuedActions.push(new ActionDetail(ActionType.Peng, player));
-      } else if (sameTileCount == 3) {
+      if (TileCore.canGang(player.handTiles, this.latestTile)) {
         this.queuedActions.push(new ActionDetail(ActionType.Gang, player));
+      } else if (TileCore.canPeng(player.handTiles, this.latestTile)) {
+        this.queuedActions.push(new ActionDetail(ActionType.Peng, player));
       }
     }
 
     // chi action
     const player = this.getNextPlayer();
     if (player !== this.current) {
-      const filteredTiles = []; // tiles list that does not contain the latest tile and duplicate tiles
-      let previousTile = TileCore.voidId;
-      for (const tile of player.handTiles) {
-        if (
-          !TileCore.isSame(tile, this.latestTile) &&
-          !TileCore.isSame(tile, previousTile)
-        ) {
-          filteredTiles.push(tile);
-        }
-        previousTile = tile;
-      }
-
-      for (let i = 0; i < filteredTiles.length - 1; i++) {
-        if (
-          TileCore.isConsecutive(
-            filteredTiles[i],
-            filteredTiles[i + 1],
-            this.latestTile,
-          )
-        ) {
-          this.queuedActions.push(new ActionDetail(ActionType.Chi, player));
-          break;
-        }
+      if (TileCore.canChi(player.handTiles, this.latestTile)) {
+        this.queuedActions.push(new ActionDetail(ActionType.Chi, player));
       }
     }
 
@@ -1041,57 +1006,6 @@ export class Game {
 
     this.current.picked = this.pickTile(true);
     return this;
-  }
-
-  canHu(tiles: TileId[]): boolean {
-    // sort tiles
-    TileCore.sortTiles(tiles);
-
-    for (let i = 0; i < tiles.length - 1; i++) {
-      // try all pairs from start
-      if (!TileCore.isSame(tiles[i], tiles[i + 1])) {
-        continue;
-      }
-      const rest = tiles.slice();
-      const result: Array<[TileId, TileId] | [TileId, TileId, TileId]> = [
-        rest.splice(i, 2) as [TileId, TileId],
-      ];
-
-      while (rest.length >= 3) {
-        // try the same 3 tiles
-        if (TileCore.isSame(rest[0], rest[1], rest[2])) {
-          result.push([rest[0], rest[1], rest[2]]);
-          rest.splice(0, 3);
-          continue;
-        }
-
-        // try the consecutive 3 tiles
-        const t1 = 0;
-        const t2 = rest.findIndex((tile) =>
-          TileCore.isConsecutive(rest[t1], tile),
-        );
-        if (t2 < 0) {
-          break; // no consecutive tiles
-        }
-        const t3 = rest.findIndex((tile) =>
-          TileCore.isConsecutive(rest[t1], rest[t2], tile),
-        );
-        if (t3 < 0) {
-          break; // no consecutive tiles
-        }
-
-        result.push([rest[t1], rest[t2], rest[t3]]);
-        rest.splice(t3, 1);
-        rest.splice(t2, 1);
-        rest.splice(t1, 1);
-      }
-
-      if (rest.length === 0) {
-        return true;
-      }
-    }
-
-    return false;
   }
 
   extractAllPaires(tiles: TileId[]) {
