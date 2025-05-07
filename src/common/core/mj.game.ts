@@ -235,9 +235,11 @@ export class Game {
 
     if (index !== -1) {
       this.current.handTiles.splice(index, 1);
-      this.current.handTiles.push(this.current.picked);
-      this.current.handTiles.sort((a, b) => a - b);
-      this.current.picked = TileCore.voidId;
+      if (this.current.picked !== TileCore.voidId) {
+        this.current.handTiles.push(this.current.picked);
+        this.current.handTiles.sort((a, b) => a - b);
+        this.current.picked = TileCore.voidId;
+      }
     } else {
       this.current.picked = TileCore.voidId;
     }
