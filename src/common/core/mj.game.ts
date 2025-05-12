@@ -711,6 +711,24 @@ export class Game {
 
         return this;
       }
+
+      if (action.type === ActionType.Hu) {
+        action.status = ActionResult.Accepted;
+
+        // clear queued actions and the latest tile
+        this.queuedActions = [];
+
+        // move this to pickLatestTile()
+        action.player.picked = this.latestTile;
+
+        this.setLatestTile(TileCore.voidId);
+
+        // update the current player
+        this.setCurrentPlayer(action.player);
+        this.setState(GameState.End);
+
+        return this;
+      }
     }
 
     // no actions queued or all passed
@@ -1034,36 +1052,6 @@ export class Game {
       }
     }
     return tiles;
-  }
-
-  /**
-   *
-   */
-  allOnePatterns(tiles: TileId[], patternType: string) {
-    const patterns: TileId[][] = [];
-
-    if (patternType === "same-3") {
-      const tids = tiles.slice();
-
-      for (let i = 0; i < tids.length; i++) {}
-    }
-
-    for (let i = 0; i < tiles.length; i++) {
-      patterns.push([tiles[i]]);
-    }
-
-    return patterns;
-  }
-
-  /**
-   * find all possible combination
-   */
-  allPatterns(tiles: TileId[], patternType: string) {
-    if (patternType === "same-3") {
-      return this.allOnePatterns(tiles, patternType);
-    }
-
-    return [];
   }
 
   /**

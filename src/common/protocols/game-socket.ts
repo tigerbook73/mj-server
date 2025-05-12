@@ -1,5 +1,5 @@
 import { io, Socket } from "socket.io-client";
-import { GameEvent, GameRequest, GameResponse } from "./apis.models";
+import type { GameEvent, GameRequest, GameResponse } from "./apis.models";
 
 export class GameSocket {
   public socket: Socket | null = null;
