@@ -39,6 +39,7 @@ export enum Position {
   South = 1,
   West = 2,
   North = 3,
+  None = -1,
 }
 
 /**
