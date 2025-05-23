@@ -810,7 +810,7 @@ export class Game {
       throw new Error("current player is not set");
     }
 
-    let pos = player.position as Position;
+    let pos = player.position;
     const direction = -1;
     while (!this.players[(pos + direction + 4) % 4]) {
       pos += direction;
