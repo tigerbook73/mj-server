@@ -1,5 +1,5 @@
-import { PlayerRole, UserType } from "./common.types";
-import { Position } from "../core/mj.game";
+import type { PlayerRole, UserType } from "./common.types";
+import type { Position } from "../core/mj.game";
 
 /**
  * Represents a user in one game.

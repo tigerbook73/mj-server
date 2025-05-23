@@ -1,4 +1,5 @@
-import { Game, Position } from "../core/mj.game";
+import type { Position } from "../core/mj.game";
+import { Game } from "../core/mj.game";
 import { PlayerModel } from "./player.model";
 
 export interface RoomCreateDto {

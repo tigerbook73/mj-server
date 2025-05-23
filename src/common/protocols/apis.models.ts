@@ -1,10 +1,11 @@
-import { Game, Player, Position } from "../core/mj.game";
+import type { Player, Position } from "../core/mj.game";
+import { Game } from "../core/mj.game";
 import { type TileId } from "../core/mj.tile-core";
 import { ClientModel } from "../models/client.model";
-import { PlayerModel } from "../models/player.model";
+import type { PlayerModel } from "../models/player.model";
 import { type RoomCreateDto, RoomModel } from "../models/room.model";
 import { UserModel } from "../models/user.model";
-import { GameSocket } from "./game-socket";
+import type { GameSocket } from "./game-socket";
 
 export const enum GameRequestType {
   // Authentication

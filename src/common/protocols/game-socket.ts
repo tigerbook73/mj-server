@@ -1,4 +1,5 @@
-import { io, Socket } from "socket.io-client";
+import type { Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 import type { GameEvent, GameRequest, GameResponse } from "./apis.models";
 
 export class GameSocket {
@@ -41,6 +42,7 @@ export class GameSocket {
 
   sendAndWait<T extends GameResponse>(data: GameRequest): Promise<T> {
     if (!this.socket) {
+      // ignore next eslint error      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       return Promise.reject({
         type: data.type,
         state: "error",
