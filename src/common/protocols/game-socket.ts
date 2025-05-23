@@ -42,7 +42,7 @@ export class GameSocket {
 
   sendAndWait<T extends GameResponse>(data: GameRequest): Promise<T> {
     if (!this.socket) {
-      // ignore next eslint error      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
       return Promise.reject({
         type: data.type,
         state: "error",
